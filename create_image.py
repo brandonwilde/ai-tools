@@ -1,42 +1,31 @@
-import os
 import requests
 
-from openai import OpenAI
+from media_tools.image_tools import generate_image_via_openai
+from utils import increment_file_name
 
 
-OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
-OPENAI_ORGANIZATION=os.environ.get('OPENAI_ORGANIZATION')
+def create_image(prompt, output_file, size="1024x1024"):
+    '''
+    Create an image using the OpenAI API.
+    '''
 
-CLIENT = OpenAI(
-    api_key=OPENAI_API_KEY,
-    organization=OPENAI_ORGANIZATION,
-)
+    # Create image
+    image_response = generate_image_via_openai(prompt, size=size)
 
-output_file = "/home/brandon/Bilder/Generated/transcription_splash.png"
+    for image in image_response.data:
+        print(image.revised_prompt)
 
-# add or increment the number in the output file name if it already exists
-while os.path.exists(output_file):
-    base, ext = os.path.splitext(output_file)
-    if base[-1].isdigit():
-        base = base[:-1] + str(int(base[-1]) + 1)
-    else:
-        base += "1"
-    output_file = base + ext
+        # download image
+        image = requests.get(image.url)
+        output_file_name = increment_file_name(output_file)
 
-# Create image
-response = CLIENT.images.generate(
-  model="dall-e-3",
-  prompt="Percutaneous aortic valve implantation",
-  n=1,
-  size="1024x1792"
-)
+        with open(output_file_name, "wb") as file:
+            file.write(image.content)
 
-for image in response.data:
-    print(image.revised_prompt)
+    return
 
-    # download image
-    image = requests.get(image.url)
-    with open(output_file, "wb") as file:
-        file.write(image.content)
 
-    print()
+output_file = "./transcription_splash.png"
+prompt = "A splash of color with the word 'transcription' in the center."
+
+create_image(prompt, output_file)

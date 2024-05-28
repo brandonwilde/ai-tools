@@ -6,7 +6,7 @@ def translate_via_openai(text, model="gpt-3.5-turbo"):
     Translate text into English using the OpenAI API.
     """
 
-    from openai_tools import CLIENT as OPENAI_CLIENT
+    from third_party_apis.openai_tools import CLIENT as OPENAI_CLIENT
 
     translation_response = OPENAI_CLIENT.chat.completions.create(
             model=model,

@@ -16,7 +16,7 @@ def transcribe_via_whisper(audio_file):
     Transcribe an audio file using the Whisper model.
     """
 
-    from openai_tools import CLIENT as OPENAI_CLIENT
+    from third_party_apis.openai_tools import CLIENT as OPENAI_CLIENT
 
     transcription_response = OPENAI_CLIENT.audio.transcriptions.create(
         model="whisper-1", 

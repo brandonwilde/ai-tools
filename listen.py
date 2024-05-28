@@ -1,5 +1,5 @@
-from audio_tools import convert_to_mp3, transcribe_via_whisper
-from text_tools import translate_via_openai
+from media_tools.audio_tools import convert_to_mp3, transcribe_via_whisper
+from media_tools.text_tools import translate_via_openai
 
 
 def transcribe_audio(file_path, model="gpt-3.5-turbo"):
