@@ -1,44 +1,38 @@
-import os
-import subprocess
-
-from openai import OpenAI
+from audio_tools import convert_to_mp3, transcribe_via_whisper
+from text_tools import translate_via_openai
 
 
-OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
-OPENAI_ORGANIZATION=os.environ.get('OPENAI_ORGANIZATION')
+def transcribe_audio(file_path, model="gpt-3.5-turbo"):
+    '''
+    Transcribe an audio file and translate the transcription to English.
+    '''
+    try:
+        if not file_path.endswith(".mp3"):
+            mp3_file = convert_to_mp3(file_path)
+        else:
+            mp3_file = file_path
+    except Exception as e:
+        print(f"An error occurred during conversion to mp3: {e}")
 
-CLIENT = OpenAI(
-    api_key=OPENAI_API_KEY,
-    organization=OPENAI_ORGANIZATION,
-)
+    try:
+        with open(mp3_file, "rb") as audio_file:
+            transcription = transcribe_via_whisper(audio_file)
+        text = transcription.text
+        print(f'\nTranscription:\n{text}\n')
+    except Exception as e:
+        print(f"An error occurred during transcription: {e}")
+
+    try:
+        if 'english' not in transcription.model_extra['language']:
+            translation = translate_via_openai(text,model)
+            print(f'\nTranslation:\n{translation}\n')
+        else:
+            translation = text
+    except Exception as e:
+        print(f"An error occurred during translation: {e}")
+
+    return {'transcription': text, 'translation': translation}
+
 
 input_file = "/home/brandon/Documents/Sound recordings/WhatsApp Ptt 2024-05-28 at 8.07.58 AM.ogg"
-
-if not input_file.endswith(".mp3"):
-    output_file = os.path.splitext(input_file)[0] + ".mp3"
-    subprocess.run(["ffmpeg", "-i", input_file, output_file], check=True)
-else:
-    output_file = input_file
-
-audio_file= open(output_file, "rb")
-transcription = CLIENT.audio.transcriptions.create(
-    model="whisper-1", 
-    file=audio_file,
-    response_format='verbose_json',
-)
-text = transcription.text
-print(transcription.text)
-
-if 'english' not in transcription.model_extra['language']:
-    translation_response = CLIENT.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": [{"type": "text", "text": "Translate the following text into English."}]},
-            {"role": "user", "content": [{"type": "text", "text": text}]}
-        ]
-    )
-    print('\nTranslation:')
-    print(translation_response.choices[0].message.content)
-    print()
-
-print()
+transcribe_audio(input_file)
