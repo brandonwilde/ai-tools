@@ -7,7 +7,12 @@ def convert_to_mp3(filepath):
     Convert an audio file to mp3 format using ffmpeg.
     """
     output_file = os.path.splitext(filepath)[0] + ".mp3"
-    subprocess.run(["ffmpeg", "-i", filepath, output_file], check=True)
+    # confirm overwrite
+    if os.path.exists(output_file):
+        overwrite = input(f"Overwrite {output_file}? (y/n): ")
+        if overwrite.lower() != "y":
+            return output_file
+    subprocess.run(["ffmpeg", "-y", "-i", filepath, output_file], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
     return output_file
 
 
