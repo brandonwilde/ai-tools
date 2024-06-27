@@ -3,16 +3,15 @@ from typing import List
 from openai_llms import ask_gpt4v
 
 
-def debug_ui(messages: List[dict], image_path: str):
+def debug_ui(messages: List[dict], system_prompt: str = "You are an expert software developer."):
     '''
     Debug a user interface using the GPT-4 Vision model.
 
     Args:
-    - messages (List[dict]): A list of messages to send to the GPT-4 Vision model. Each message is a dictionary with one of the following keys:
-        - text (str): A text message to send to the GPT-4 Vision model.
-        - code (str): A code snippet to send to the GPT-4 Vision model.
-        - image (str): This string may be empty, as it is a placeholder for the actual image.
-    - image_path (str): The path to the image to send to the GPT-4 Vision model.
+    - messages (List[dict]): A list of messages to the multimodal LLM. Each message is a dictionary with one of the following keys:
+        - text (str): A text message.
+        - code (str): A code snippet.
+        - image (str): The path to an image.
     '''
 
     user_content = []
@@ -32,7 +31,7 @@ def debug_ui(messages: List[dict], image_path: str):
             user_content.append({
                 "type": "image_url",
                 "image_url": {
-                    "url": "Will be replaced with the base64 encoded image."
+                    "path": message['image']
                 }
             })
     
@@ -41,7 +40,7 @@ def debug_ui(messages: List[dict], image_path: str):
         "content": [
             {
                 "type": "text",
-                "text": "You are an expert software developer."
+                "text": system_prompt,
             }
         ]
     },
@@ -50,7 +49,7 @@ def debug_ui(messages: List[dict], image_path: str):
         "content": user_content
     }]
 
-    return ask_gpt4v(image_path, formatted_messages)
+    return ask_gpt4v(formatted_messages)
 
 
 code_snippet = """
@@ -206,10 +205,10 @@ messages = [
     {'text': """My code is not behaving as expected. I would like an evenly spaced UI, but the "Entregar datos" label and checkbox are not aligned with the other elements. They seem to be shifted slightly to the right. Here is the code I am using:"""},
     {'code': code_snippet},
     {'text': "And here is an image of the output:"},
-    {'image': ''},
+    {'image': image_path},
     {'text': "What should I do to fix the alignment?"}
 ]
 
-result = debug_ui(messages, image_path)
+result = debug_ui(messages)
 
 print(result)

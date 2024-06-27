@@ -18,11 +18,23 @@ def encode_image(image_path):
         return base64.b64encode(image_file.read()).decode('utf-8')
 
 
-def ask_gpt4v(image_path: str, messages: list, max_tokens: int = 1000):
+def ask_gpt4v(messages: list, max_tokens: int = 1000):
     '''
-    Submit a prompt to the GPT-4 Vision model and return the response. The prompt should be a list of messages, and there may be up to one image_url message in the list. The image_url message should have a URL field, which will be replaced with the base64-encoded image from the image_path argument.
+    Submit a prompt to the GPT-4 Vision model and return the response.
+
+    Args:
+    - messages (list): A list of messages to submit to the model. Each message is a dictionary with the following keys:
+        - role (str): The role of the message, either "user" or "system".
+        - content (list): A list of content items. Each content item is a dictionary with the following keys:
+            - type (str): The type of content, either "text" or "image_url".
+            - text (str): The text content.
+            - image_url (dict): A dictionary with the following key:
+                - path (str): The path to the image file.
+    - max_tokens (int): The maximum number of tokens to generate.
+
+    Returns:
+    - response (str): The text response from the model.
     '''
-    base64_image = encode_image(image_path)
 
     headers = {
         "Content-Type": "application/json",
@@ -30,11 +42,13 @@ def ask_gpt4v(image_path: str, messages: list, max_tokens: int = 1000):
         "OpenAI-Organization": OPENAI_ORGANIZATION,
     }
 
-    # Insert the image into the messages
+    # Insert image content into the messages
     for message in messages:
         if message['role'] == 'user':
             for content in message['content']:
                 if content['type'] == 'image_url':
+                    image_path = content['image_url']['path']
+                    base64_image = encode_image(image_path)
                     content['image_url']['url'] = f"data:image/jpeg;base64,{base64_image}"
 
     payload = {
