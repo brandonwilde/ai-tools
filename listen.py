@@ -2,7 +2,7 @@ from media_tools.audio_tools import convert_to_mp3, transcribe_via_whisper
 from media_tools.text_tools import translate_via_openai
 
 
-def transcribe_audio(file_path, model="gpt-3.5-turbo"):
+def transcribe_and_translate_audio(file_path, model="gpt-3.5-turbo"):
     '''
     Transcribe an audio file and translate the transcription to English.
     '''
@@ -34,5 +34,5 @@ def transcribe_audio(file_path, model="gpt-3.5-turbo"):
     return {'transcription': text, 'translation': translation}
 
 
-input_file = "/home/brandon/Documents/Sound recordings/WhatsApp Ptt 2024-05-28 at 8.07.58 AM.ogg"
-transcribe_audio(input_file)
+input_file = "/home/brandon/Documents/Sound recordings/WhatsApp Ptt 2024-06-01 at 5.18.53 PM.ogg"
+transcribe_and_translate_audio(input_file)
