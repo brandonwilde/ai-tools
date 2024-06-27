@@ -1,11 +1,42 @@
 
+from typing import List
 from openai_llms import ask_gpt4v
 
 
-image_path = "/home/brandon/Projects/doc_analysis/data/screenshots/Bildschirmfoto vom 2024-04-02 20-46-40.png"
+def debug_ui(messages: List[dict], image_path: str):
+    '''
+    Debug a user interface using the GPT-4 Vision model.
 
-messages = [
-    {
+    Args:
+    - messages (List[dict]): A list of messages to send to the GPT-4 Vision model. Each message is a dictionary with one of the following keys:
+        - text (str): A text message to send to the GPT-4 Vision model.
+        - code (str): A code snippet to send to the GPT-4 Vision model.
+        - image (str): This string may be empty, as it is a placeholder for the actual image.
+    - image_path (str): The path to the image to send to the GPT-4 Vision model.
+    '''
+
+    user_content = []
+
+    for message in messages:
+        if 'text' in message:
+            user_content.append({
+                "type": "text",
+                "text": message['text']
+            })
+        elif 'code' in message:
+            user_content.append({
+                "type": "text",
+                "text": f"```html\n{message['code']}\n```"
+            })
+        elif 'image' in message:
+            user_content.append({
+                "type": "image_url",
+                "image_url": {
+                    "url": "Will be replaced with the base64 encoded image."
+                }
+            })
+    
+    formatted_messages = [{
         "role": "system",
         "content": [
             {
@@ -16,14 +47,13 @@ messages = [
     },
     {
         "role": "user",
-        "content": [
-            {
-                "type": "text",
-                "text": """My code is not behaving as expected. I would like an evenly spaced UI, but the "Entregar datas al Min. Turismo" label and checkbox are not aligned with the other elements. They seem to be shifted slightly to the right. Here is the code I am using:"""
-            },
-            {
-                "type": "text",
-                "text": """```html
+        "content": user_content
+    }]
+
+    return ask_gpt4v(image_path, formatted_messages)
+
+
+code_snippet = """
 from PyQt5.QtWidgets import (
     QApplication,
     QButtonGroup,
@@ -128,7 +158,7 @@ class VentanaPrincipal(QMainWindow):
         entrada_botón.setChecked(True)  # Set 'Entrada' as the default option
 
         mincit = QCheckBox()
-        mincit_label = QLabel('Entregar datos al Min. Turismo')
+        mincit_label = QLabel('Entregar datos)
         movimiento_y_mincit_grid.addWidget(mincit_label, 0, 2)
         movimiento_y_mincit_grid.addWidget(mincit, 1, 2)
 
@@ -137,7 +167,7 @@ class VentanaPrincipal(QMainWindow):
         # TODO: También permitir que el usuario pueda presionar enter para iniciar el proceso
 
         # agregar un botón para iniciar el proceso
-        iniciar_botón = QPushButton('Iniciar proceso (Migracion Colombia)')
+        iniciar_botón = QPushButton('Iniciar proceso')
         iniciar_botón.clicked.connect(lambda:
                 iniciar_proceso(
                     ruta_hoja.text(),
@@ -168,28 +198,18 @@ def create_app():
 
 if __name__ == "__main__":
     create_app()
-```
-    """
-            },
-            {
-                "type": "text",
-                "text": "And here is an image of the output:"
-            },
-            {
-                "type": "image_url",
-                "image_url": {
-                    "url": "Will be replaced with the base64 encoded image."
-                }
-            },
-            {
-                "type": "text",
-                "text": "What should I do to fix the alignment?"
-            },
-        ]
-    },
+"""
+
+image_path = "/home/brandon/Projects/doc_analysis/data/screenshots/Bildschirmfoto vom 2024-04-02 20-46-40.png"
+
+messages = [
+    {'text': """My code is not behaving as expected. I would like an evenly spaced UI, but the "Entregar datos" label and checkbox are not aligned with the other elements. They seem to be shifted slightly to the right. Here is the code I am using:"""},
+    {'code': code_snippet},
+    {'text': "And here is an image of the output:"},
+    {'image': ''},
+    {'text': "What should I do to fix the alignment?"}
 ]
 
-result = ask_gpt4v(image_path, messages)
+result = debug_ui(messages, image_path)
 
 print(result)
-breakpoint
