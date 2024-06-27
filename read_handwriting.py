@@ -1,6 +1,5 @@
 
-from openai_llms import ask_gpt4v
-
+from media_tools.image_tools import ask_gpt4v
 
 
 system_prompt = "You are expert in deciphering difficult-to-read handwriting. You are now correcting a poor transcription of an excerpt from the journals of a Mormon missionary in eastern Canada. Note that the author writes an 'I', it sometimes looks like an 'S' or a '2'."

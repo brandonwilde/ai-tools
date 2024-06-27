@@ -1,4 +1,4 @@
-from openai_llms import ask_gpt4v
+from media_tools.image_tools import ask_gpt4v
 
 
 code_snippet = """
