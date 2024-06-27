@@ -1,55 +1,4 @@
-
-from typing import List
 from openai_llms import ask_gpt4v
-
-
-def debug_ui(messages: List[dict], system_prompt: str = "You are an expert software developer."):
-    '''
-    Debug a user interface using the GPT-4 Vision model.
-
-    Args:
-    - messages (List[dict]): A list of messages to the multimodal LLM. Each message is a dictionary with one of the following keys:
-        - text (str): A text message.
-        - code (str): A code snippet.
-        - image (str): The path to an image.
-    '''
-
-    user_content = []
-
-    for message in messages:
-        if 'text' in message:
-            user_content.append({
-                "type": "text",
-                "text": message['text']
-            })
-        elif 'code' in message:
-            user_content.append({
-                "type": "text",
-                "text": f"```html\n{message['code']}\n```"
-            })
-        elif 'image' in message:
-            user_content.append({
-                "type": "image_url",
-                "image_url": {
-                    "path": message['image']
-                }
-            })
-    
-    formatted_messages = [{
-        "role": "system",
-        "content": [
-            {
-                "type": "text",
-                "text": system_prompt,
-            }
-        ]
-    },
-    {
-        "role": "user",
-        "content": user_content
-    }]
-
-    return ask_gpt4v(formatted_messages)
 
 
 code_snippet = """
@@ -199,6 +148,7 @@ if __name__ == "__main__":
     create_app()
 """
 
+system_prompt = "You are an expert software developer."
 image_path = "/home/brandon/Projects/doc_analysis/data/screenshots/Bildschirmfoto vom 2024-04-02 20-46-40.png"
 
 messages = [
@@ -209,6 +159,6 @@ messages = [
     {'text': "What should I do to fix the alignment?"}
 ]
 
-result = debug_ui(messages)
+result = ask_gpt4v(messages, system_prompt)
 
 print(result)
