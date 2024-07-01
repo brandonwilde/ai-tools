@@ -4,6 +4,8 @@ from typing import List, Literal
 
 import requests
 
+from third_party_apis.openai_tools import format_openai_messages
+
 # TODO: Update multimodal model request to use Python API 
 
 
@@ -35,54 +37,6 @@ OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
 OPENAI_ORGANIZATION=os.environ.get('OPENAI_ORGANIZATION')
 
 
-def format_messages(messages: List[dict], system_prompt: str):
-    '''
-    Debug a user interface using the GPT-4 Vision model.
-
-    Args:
-    - messages (List[dict]): A list of messages to the multimodal LLM. Each message is a dictionary with one of the following keys:
-        - text (str): A text message.
-        - code (str): A code snippet.
-        - image (str): The path to an image.
-    '''
-
-    user_content = []
-
-    for message in messages:
-        if 'text' in message:
-            user_content.append({
-                "type": "text",
-                "text": message['text']
-            })
-        elif 'code' in message:
-            user_content.append({
-                "type": "text",
-                "text": f"```html\n{message['code']}\n```"
-            })
-        elif 'image' in message:
-            user_content.append({
-                "type": "image_url",
-                "image_url": {
-                    "path": message['image']
-                }
-            })
-    
-    messages_with_system_prompt = [{
-        "role": "system",
-        "content": [
-            {
-                "type": "text",
-                "text": system_prompt,
-            }
-        ]
-    },
-    {
-        "role": "user",
-        "content": user_content
-    }]
-
-    return messages_with_system_prompt
-
 
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
@@ -111,7 +65,7 @@ def ask_gpt4v(messages: List[dict], system_prompt: str, max_tokens: int = 1000):
         "OpenAI-Organization": OPENAI_ORGANIZATION,
     }
 
-    formatted_messages = format_messages(messages, system_prompt)
+    formatted_messages = format_openai_messages(messages, system_prompt)
 
     # Insert image content into the messages
     for message in formatted_messages:
