@@ -1,3 +1,4 @@
+import base64
 import os
 
 
@@ -12,3 +13,8 @@ def increment_file_name(file_path):
         file_path = f"{base}_v{version}{ext}"
 
     return file_path
+
+
+def encode_image(image_path):
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode('utf-8')

@@ -1,14 +1,15 @@
 from typing import List
 
-from third_party_apis.openai_tools import format_openai_messages
-
 
 def prompt_openai(messages: List[dict], model="gpt-3.5-turbo", system_prompt="You are a helpful assistant."):
     """
     Get a response from an OpenAI LLM.
     """
 
-    from third_party_apis.openai_tools import CLIENT as OPENAI_CLIENT
+    from third_party_apis.openai_tools import (
+        CLIENT as OPENAI_CLIENT,
+        format_openai_messages,
+    )
 
     formatted_messages = format_openai_messages(messages, system_prompt)
 
@@ -26,7 +27,10 @@ def chat_with_openai(messages=[], model="gpt-3.5-turbo", system_prompt="You are 
     Can optionally include a list of messages to start the conversation.
     """
 
-    from third_party_apis.openai_tools import CLIENT as OPENAI_CLIENT
+    from third_party_apis.openai_tools import (
+        CLIENT as OPENAI_CLIENT,
+        format_openai_messages,
+    )
 
     for m in messages:
         print("User:", m['text'], '\n')

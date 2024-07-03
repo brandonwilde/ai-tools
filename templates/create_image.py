@@ -1,7 +1,7 @@
 import requests
 
 from media_tools.image_tools import generate_image_via_openai
-from utils import increment_file_name
+from media_tools.utils import increment_file_name
 
 
 def create_image(prompt, output_file, model="dall-e-3", size="1024x1024"):

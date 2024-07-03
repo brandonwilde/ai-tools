@@ -1,7 +1,6 @@
-import base64
 from typing import List, Literal
 
-from third_party_apis.openai_tools import format_openai_messages
+from media_tools.utils import encode_image
 
 
 def generate_image_via_openai(
@@ -15,9 +14,9 @@ def generate_image_via_openai(
     Generate an image using the OpenAI API.
     """
 
-    from third_party_apis.openai_tools import CLIENT
+    from third_party_apis.openai_tools import CLIENT as OPENAI_CLIENT
 
-    response = CLIENT.images.generate(
+    response = OPENAI_CLIENT.images.generate(
         model=model,
         prompt=prompt,
         n=1,
@@ -25,11 +24,6 @@ def generate_image_via_openai(
     )
 
     return response
-
-
-def encode_image(image_path):
-    with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode('utf-8')
 
 
 def ask_gpt4v(messages: List[dict], system_prompt: str, max_tokens: int = 1000):
@@ -48,7 +42,10 @@ def ask_gpt4v(messages: List[dict], system_prompt: str, max_tokens: int = 1000):
     - response (str): The text response from the model.
     '''
 
-    from third_party_apis.openai_tools import CLIENT as OPENAI_CLIENT
+    from third_party_apis.openai_tools import (
+        CLIENT as OPENAI_CLIENT,
+        format_openai_messages,
+    )
 
     formatted_messages = format_openai_messages(messages, system_prompt)
 
