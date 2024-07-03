@@ -1,15 +1,18 @@
 from datetime import datetime
 import os
 import re
-import time
 
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
 import requests
 
+from media_tools.utils import countdown
+
 
 AZURE_API_KEY = os.environ.get('AZURE_API_KEY')
 AZURE_ENDPOINT = os.environ.get('AZURE_ENDPOINT')
+
+# TODO: Generalize OCR functions
 
 def send_to_ocr(filepath):
   read_url = f"{AZURE_ENDPOINT}/formrecognizer/documentModels/prebuilt-read:analyze?api-version=2023-07-31"
@@ -32,15 +35,6 @@ def is_running(response_json):
     return True
   else:
     return False
-
-
-def countdown(seconds):
-    for i in range(seconds, 0, -1):
-      print(f"\r{i} seconds remaining...", end='', flush=True)
-      time.sleep(1)
-    print("\r0 seconds remain.", flush=True)
-
-
 
 
 def read_file(filepath):
