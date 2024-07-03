@@ -10,17 +10,19 @@ OPENAI_ORGANIZATION=os.environ.get('OPENAI_ORGANIZATION')
 if any([not OPENAI_API_KEY, not OPENAI_ORGANIZATION]):
     raise Exception("OPENAI_API_KEY and OPENAI_ORGANIZATION must be set as environment variables.")
 
+
 CLIENT = OpenAI(
     api_key=OPENAI_API_KEY,
     organization=OPENAI_ORGANIZATION,
 )
 
+
 def format_openai_messages(messages: List[dict], system_prompt: str):
     '''
-    Debug a user interface using the GPT-4 Vision model.
+    Format messages for submission to an OpenAI model.
 
     Args:
-    - messages (List[dict]): A list of messages to the multimodal LLM. Each message is a dictionary with one of the following keys:
+    - messages (List[dict]): A list of messages to the LLM. Each message is a dictionary with one of the following fields:
         - text (str): A text message.
         - code (str): A code snippet.
         - image (str): The path to an image.

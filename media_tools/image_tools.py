@@ -1,12 +1,7 @@
 import base64
-import os
 from typing import List, Literal
 
-import requests
-
 from third_party_apis.openai_tools import format_openai_messages
-
-# TODO: Update multimodal model request to use Python API 
 
 
 def generate_image_via_openai(
@@ -32,12 +27,6 @@ def generate_image_via_openai(
     return response
 
 
-# OpenAI API Key
-OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
-OPENAI_ORGANIZATION=os.environ.get('OPENAI_ORGANIZATION')
-
-
-
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
@@ -59,11 +48,7 @@ def ask_gpt4v(messages: List[dict], system_prompt: str, max_tokens: int = 1000):
     - response (str): The text response from the model.
     '''
 
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {OPENAI_API_KEY}",
-        "OpenAI-Organization": OPENAI_ORGANIZATION,
-    }
+    from third_party_apis.openai_tools import CLIENT as OPENAI_CLIENT
 
     formatted_messages = format_openai_messages(messages, system_prompt)
 
@@ -76,12 +61,11 @@ def ask_gpt4v(messages: List[dict], system_prompt: str, max_tokens: int = 1000):
                     base64_image = encode_image(image_path)
                     content['image_url']['url'] = f"data:image/jpeg;base64,{base64_image}"
 
-    payload = {
-        "model": "gpt-4-turbo",
-        "messages": formatted_messages,
-        "max_tokens": max_tokens
-    }
 
-    response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+    response = OPENAI_CLIENT.chat.completions.create(
+        model="gpt-4-turbo",
+        messages=formatted_messages,
+        max_tokens=max_tokens,
+    )
 
-    return response.json()['choices'][0]['message']['content']
+    return response.choices[0].message.content
