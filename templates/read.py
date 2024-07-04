@@ -52,6 +52,7 @@ def read_file(filepath):
             else:
                 print("Error in OCR response:", error)
                 raise Exception(error['message'])
+        return False
 
     while RATE_LIMIT_REACHED:
         RATE_LIMIT_REACHED = False # reset
@@ -79,8 +80,8 @@ def read_file(filepath):
                 RATE_LIMIT_REACHED = True
                 continue
 
-        still_running = is_running(ocr_response)
-        print("Job is still running. Checking for another status update...")
+            still_running = is_running(ocr_response)
+            print("Job is still running. Checking for another status update...")
 
 
     if not ocr_response['status'] == 'succeeded':
@@ -144,7 +145,8 @@ def batch_read(folder, files):
 # batch_read(folder, files)
 
 if __name__ == "__main__":
-    file = "IMG_20240210_115126.jpg"
-    content = read_sdk(file)
-    with open(file.replace('.jpg', '.txt'), 'w') as f:
-        f.write(content)
+    filepath = "IMG_20240210_115126.jpg"
+    output_filepath = os.path.splitext(filepath)[0] + ".txt"
+    ocr_result = read_sdk(filepath)
+    with open(output_filepath, 'w') as f:
+        f.write(ocr_result.content)
