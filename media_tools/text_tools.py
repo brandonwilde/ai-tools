@@ -1,7 +1,8 @@
 from typing import List
 
+DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
 
-def prompt_openai(messages: List[dict], model="gpt-3.5-turbo", system_prompt="You are a helpful assistant."):
+def prompt_openai(messages: List[dict], model=DEFAULT_OPENAI_MODEL, system_prompt="You are a helpful assistant."):
     """
     Get a response from an OpenAI LLM.
     """
@@ -21,7 +22,7 @@ def prompt_openai(messages: List[dict], model="gpt-3.5-turbo", system_prompt="Yo
     return chat_response.choices[0].message.content
 
 
-def chat_with_openai(messages=[], model="gpt-3.5-turbo", system_prompt="You are a helpful assistant."):
+def chat_with_openai(messages=[], model=DEFAULT_OPENAI_MODEL, system_prompt="You are a helpful assistant."):
     """
     Conversational interface with the OpenAI API.
     Can optionally include a list of messages to start the conversation.
@@ -80,7 +81,7 @@ def chat_with_openai(messages=[], model="gpt-3.5-turbo", system_prompt="You are 
 
 
 
-def translate_via_openai(text, model="gpt-3.5-turbo"):
+def translate_via_openai(text, model=DEFAULT_OPENAI_MODEL):
     """
     Translate text into English using the OpenAI API.
     """
