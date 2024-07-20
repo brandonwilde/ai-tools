@@ -1,3 +1,20 @@
+from pathlib import Path
+import sys
+
+#----Enable imports as if run from project root----#
+def find_repo_root(repo_name):
+    current_path = Path(__file__).resolve()
+    while current_path.parent != current_path: # Stop at filesystem root
+        if current_path.name == repo_name:
+            return current_path
+        current_path = current_path.parent
+    raise FileNotFoundError(f'Could not find the root of the "{repo_name}" repository in the file path.')
+
+root_path = find_repo_root(repo_name="ai-tools")
+if str(root_path) not in sys.path:
+    sys.path.append(str(root_path))
+#--------------------------------------------------#
+
 import requests
 
 from media_tools.image_tools import generate_image_via_openai
@@ -28,8 +45,8 @@ def create_image(prompt, output_file, model="dall-e-3", size="1024x1024"):
     return
 
 
-output_file = "./transcription_splash.png"
-prompt = "A splash of color with the word 'transcription' in the center."
+output_file = "./rad_wildebeest.png"
+prompt = "A rad wildebeest."
 size = "512x512"
 model = "dall-e-2"
 
