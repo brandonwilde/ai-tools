@@ -5,6 +5,17 @@ DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
 def prompt_openai(messages: List[dict], model=DEFAULT_OPENAI_MODEL, system_prompt="You are a helpful assistant."):
     """
     Get a response from an OpenAI LLM.
+
+    Args:
+    - messages (List[dict]): A list of messages to the LLM. Each message is a dictionary with one of the following fields:
+        - text (str): A text message.
+        - code (str): A code snippet.
+        - image (str): The path to an image.
+    - model (str): The OpenAI model to use.
+    - system_prompt (str): The system prompt to use.
+
+    Returns:
+    - str: The response from the LLM.
     """
 
     from third_party_apis.openai_tools import (

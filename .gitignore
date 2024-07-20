@@ -161,4 +161,6 @@ cython_debug/
 
 
 data/
+templates/**/*.txt
 *.png
+*.xml
