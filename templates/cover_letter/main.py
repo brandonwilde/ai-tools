@@ -1,3 +1,20 @@
+from pathlib import Path
+import sys
+
+#----Enable imports as if run from project root----#
+def find_repo_root(repo_name):
+    current_path = Path(__file__).resolve()
+    while current_path.parent != current_path: # Stop at filesystem root
+        if current_path.name == repo_name:
+            return current_path
+        current_path = current_path.parent
+    raise FileNotFoundError(f'Could not find the root of the "{repo_name}" repository in the file path.')
+
+root_path = find_repo_root(repo_name="ai-tools")
+if str(root_path) not in sys.path:
+    sys.path.append(str(root_path))
+#--------------------------------------------------#
+
 from media_tools.text_tools import prompt_openai
 
 
@@ -5,17 +22,29 @@ company_name = ""
 
 job_title = ""
 
-try:
-    with open("job_description.txt", "r") as f:
-        job_description = f.read()
-except Exception as e:
+job_description = "" # Reads from file if empty
+
+previous_cover_letters = "" # Reads from file if empty
+
+parent_dir = Path(__file__).parent
+
+for path in [parent_dir, root_path]:
+    if (description_path := path / "job_description.txt").exists():
+        with open(description_path, "r") as f:
+            job_description = f.read()
+        break
+if not job_description:
     raise Exception("Please provide the job description in a file named 'job_description.txt'.")
 
-try:
-    with open("previous_cover_letters.txt", "r") as f:
-        previous_cover_letters = f.read()
-except Exception as e:
+for path in [parent_dir, root_path]:
+    if (letters_path := path / "previous_cover_letters.txt").exists():
+        with open(letters_path, "r") as f:
+            previous_cover_letters = f.read()
+        break
+if not previous_cover_letters:
     raise Exception("Please provide previous cover letters in a file named 'previous_cover_letters.txt'.")
+
+
 
 prompt_template = """
 You are an AI assistant tasked with helping create a great cover letter for a competitive job application. Follow these steps carefully:
@@ -43,7 +72,7 @@ Print the revised letter within <revised_letter> tags.
 
 Provide your answers within <analysis> tags.
 
-5. Identify facts from the previous cover letters that could be used to fill in the letter's current data gaps. List these facts within <relevant_facts> tags.
+5. Identify statements and claims from the previous cover letters that could be used to fill in the letter's current data gaps. Make sure to pull this information from the previous cover letters and NOT from the job description. List these facts within <relevant_facts> tags.
 
 6. Make adjustments to the letter by removing irrelevant information and adding relevant information found in the previous letters. Be discrete and tasteful, refraining from unnecessary phrases like \"this experience matches your requirements\". Print the final version of the letter within <final_letter> tags.
 
@@ -62,5 +91,5 @@ prompt = prompt_template.format(
 
 response = prompt_openai(messages=[{"text": prompt}])
 
-with open("cover_letter.xml", "w") as f:
+with open(parent_dir / "cover_letter.xml", "w") as f:
     f.write(response)
