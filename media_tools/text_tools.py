@@ -1,6 +1,9 @@
 from typing import List
 
 DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
+DEFAULT_ANTHROPIC_MODEL = "claude-3-5-sonnet-20240620"
+
+# TODO: Update these to handle LLM calls to handle images as well.
 
 def prompt_openai(messages: List[dict], model=DEFAULT_OPENAI_MODEL, system_prompt="You are a helpful assistant."):
     """
@@ -109,4 +112,65 @@ def translate_via_openai(text, model=DEFAULT_OPENAI_MODEL):
 
     return translation_response.choices[0].message.content
 
+
+def prompt_claude(
+        messages: List[dict],
+        model=DEFAULT_ANTHROPIC_MODEL,
+        system_prompt="You are a helpful assistant.",
+        max_tokens=1000,
+        temperature=0,
+    ):
+    """
+    Get a response from a Claude LLM.
+
+    Args:
+    - messages (List[dict]): A list of messages to the LLM. Each message is a dictionary with one of the following fields:
+        - text (str): A text message.
+        - code (str): A code snippet.
+        - image (str): The path to an image.
+    - model (str): The Claude model to use.
+    - system_prompt (str): The system prompt to use.
+
+    Returns:
+    - str: The response from the LLM.
+    """
+
+    from third_party_apis.anthropic_tools import (
+        CLIENT as ANTHROPIC_CLIENT,
+    )
+
+    user_content = []
+    for message in messages:
+        if 'text' in message:
+            user_content.append({
+                "type": "text",
+                "text": message['text']
+            })
+        elif 'code' in message:
+            user_content.append({
+                "type": "text",
+                "text": f"```\n{message['code']}\n```"
+            })
+        elif 'image' in message:
+            user_content.append({
+                "type": "image_url",
+                "image_url": {
+                    "path": message['image']
+                }
+            })
+
+    formatted_messages = [{
+        "role": "user",
+        "content": user_content
+    }]
+
+    message = ANTHROPIC_CLIENT.messages.create(
+        model=model,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        system=system_prompt,
+        messages=formatted_messages
+    )
+
+    return message.content
 
