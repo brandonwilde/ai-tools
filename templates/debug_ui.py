@@ -37,6 +37,6 @@ messages = [
     {'text': "How can I fix the alignment so that the book review modal content is to the right of the X rather than below it?"}
 ]
 
-result = prompt_openai(messages, model="gpt-4o-mini", system_prompt=system_prompt)
+result = prompt_openai(messages, system_prompt=system_prompt)
 
 print(result)
