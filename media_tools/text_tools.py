@@ -1,6 +1,6 @@
 from typing import List
 
-from media_tools.utils import encode_image
+from media_tools.utils import encode_image, log_time
 
 DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
 DEFAULT_ANTHROPIC_MODEL = "claude-3-5-sonnet-20240620"
@@ -60,7 +60,12 @@ def format_openai_messages(messages: List[dict], system_prompt=""):
     return formatted_system_prompt
 
 
-def prompt_openai(messages: List[dict], model=DEFAULT_OPENAI_MODEL, system_prompt="You are a helpful assistant."):
+@log_time
+def prompt_openai(
+        messages: List[dict],
+        model=DEFAULT_OPENAI_MODEL,
+        system_prompt="You are a helpful assistant.",
+    ):
     """
     Get a response from an OpenAI LLM.
 
@@ -86,6 +91,9 @@ def prompt_openai(messages: List[dict], model=DEFAULT_OPENAI_MODEL, system_promp
         model=model,
         messages=formatted_messages,
     )
+
+    print(f"Prompt Tokens:   {chat_response.usage.prompt_tokens:>7}")
+    print(f"Response Tokens: {chat_response.usage.completion_tokens:>7}")
 
     return chat_response.choices[0].message.content
 
@@ -147,7 +155,6 @@ def chat_with_openai(messages=[], model=DEFAULT_OPENAI_MODEL, system_prompt="You
         print()
 
 
-
 def translate_via_openai(text, model=DEFAULT_OPENAI_MODEL):
     """
     Translate text into English using the OpenAI API.
@@ -166,6 +173,7 @@ def translate_via_openai(text, model=DEFAULT_OPENAI_MODEL):
     return translation_response.choices[0].message.content
 
 
+@log_time
 def prompt_claude(
         messages: List[dict],
         model=DEFAULT_ANTHROPIC_MODEL,
@@ -224,6 +232,9 @@ def prompt_claude(
         system=system_prompt,
         messages=formatted_messages
     )
+
+    print(f"Prompt Tokens:   {message.usage.input_tokens:>7}")
+    print(f"Response Tokens: {message.usage.output_tokens:>7}")
 
     return message.content
 

@@ -1,6 +1,33 @@
 import base64
+from functools import wraps
+import inspect
 import os
 import time
+
+
+def log_time(func):
+    '''
+    Print the time it takes for an LLM call to process.
+    '''
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # Get the function's signature
+        sig = inspect.signature(func)
+        bound_args = sig.bind_partial(*args, **kwargs)
+        bound_args.apply_defaults()
+
+        # Extract the model argument
+        model = bound_args.arguments.get('model', None)
+
+        print(f'LLM "{model}" called...')
+
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+
+        print(f'Response took {end - start:.2f} seconds.')
+        return result
+    return wrapper
 
 
 def increment_file_name(file_path):
