@@ -16,6 +16,7 @@ if str(root_path) not in sys.path:
 #--------------------------------------------------#
 
 from media_tools.text_tools import prompt_openai
+from media_tools.utils import filenamify
 
 
 company_name = ""
@@ -49,7 +50,7 @@ if not previous_cover_letters:
 prompt_template = """
 You are an AI assistant tasked with helping create a great cover letter for a competitive job application. Follow these steps carefully:
 
-1. First, review the following information:
+1. **REVIEW** - First, review the following information:
 
 <job_description>{JOB_DESCRIPTION}</job_description>
 
@@ -57,28 +58,28 @@ You are an AI assistant tasked with helping create a great cover letter for a co
 {PREVIOUS_COVER_LETTERS}
 </previous_cover_letters>
 
-2. Select the cover letter from the previous cover letters that best represents the applicant for the new position. Print this letter verbatim within <selected_letter> tags.
+2. **SELECT** - Select the cover letter from the previous cover letters that best represents the applicant for the new position. Print this letter verbatim within <selected_letter> tags.
 
-3. Make minimal updates to the selected letter so that it no longer references the original position and company, but instead refers to the new company and position. Use the following information:
+3. **UPDATE** - Make minimal updates to the selected letter so that it no longer references the original position and company, but instead refers to the new company and position. Use the following information:
 
 New Company: {COMPANY_NAME}
 New Position: {JOB_TITLE}
 
 Print the revised letter within <revised_letter> tags.
 
-4. Answer the following questions:
+4. **ANALYZE** - Answer the following questions:
    a) Which information in the letter is irrelevant to the new position?
    b) What information is missing from the letter that would make it more suitable for the new position?
 
 Provide your answers within <analysis> tags.
 
-5. Identify statements and claims from the previous cover letters that could be used to fill in the letter's current data gaps. Make sure to pull this information from the previous cover letters and NOT from the job description. List these facts within <relevant_facts> tags.
+5. **RESEARCH** - Identify statements and claims from *the previous cover letters* that could be used to fill in the letter's current data gaps. Make sure to pull this information from the previous cover letters and *NOT* from the job description. List these facts within <relevant_facts> tags.
 
-6. Make adjustments to the letter by removing irrelevant information and adding relevant information found in the previous letters. Be discrete and tasteful, refraining from unnecessary phrases like \"this experience matches your requirements\". Print the final version of the letter within <final_letter> tags.
+6. **FINALIZE** - Make adjustments to the letter by removing irrelevant information and adding relevant information found in the previous letters. Be discrete and tasteful, refraining from unnecessary phrases like \"this experience matches your requirements\". Print the final version of the letter within <final_letter> tags.
 
-7. List the changes you made to the letter within <changes_made> tags.
+7. **BRIEF** - List the specific changes you made to the letter within <changes_made> tags.
 
-Remember to think carefully about each step before providing your response. If you need to, use <scratchpad> tags to work through your thought process before giving your final answer for each step.
+Remember to think carefully about each step before providing your response. Use <scratchpad> tags prior to each step to remind yourself of what is required for that step and work through your thought process before giving your final answer for the step.
 """
 
 
@@ -89,7 +90,8 @@ prompt = prompt_template.format(
     JOB_TITLE=job_title,
 )
 
-response = prompt_openai(messages=[{"text": prompt}])
+response = prompt_openai(messages=[{"text": "Wazzzzupp"}])
 
-with open(parent_dir / "cover_letter.xml", "w") as f:
+output_file = parent_dir / f"cover_letter_{filenamify(company_name)}.xml"
+with open(output_file, "w") as f:
     f.write(response)

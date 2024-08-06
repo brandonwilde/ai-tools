@@ -2,6 +2,7 @@ import base64
 from functools import wraps
 import inspect
 import os
+import string
 import time
 
 
@@ -41,6 +42,14 @@ def increment_file_name(file_path):
         file_path = f"{base}_v{version}{ext}"
 
     return file_path
+
+
+def filenamify(s: str) -> str:
+    '''
+    Remove a string's punctuation, replace spaces with underscores, and put in lowercase.
+    '''
+    character_map = str.maketrans(' ','_', string.punctuation)
+    return s.translate(character_map).lower()
 
 
 def encode_image(image_path):
