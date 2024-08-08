@@ -8,7 +8,7 @@ DEFAULT_ANTHROPIC_MODEL = "claude-3-5-sonnet-20240620"
 # TODO: Update Anthropic LLM calls to handle images as well.
 
 
-def format_openai_messages(messages: List[dict], system_prompt=""):
+def format_openai_messages(messages: List[dict] = [], system_prompt=""):
     '''
     Format messages for submission to an OpenAI model.
 
@@ -155,22 +155,21 @@ def chat_with_openai(messages=[], model=DEFAULT_OPENAI_MODEL, system_prompt="You
         print()
 
 
-def translate_via_openai(text, model=DEFAULT_OPENAI_MODEL):
+def translate_via_openai(text, target_lang="English", model=DEFAULT_OPENAI_MODEL):
     """
-    Translate text into English using the OpenAI API.
+    Translate text into a target language using the OpenAI API.
     """
 
-    from third_party_apis.openai_tools import CLIENT as OPENAI_CLIENT
+    translation = prompt_openai(
+        messages=[
+            {"text": f"Translate the following text into {target_lang.title()}."},
+            {"text": text}
+        ],
+        model=model,
+        system_prompt="You are a highly skilled translator with expertise in many languages. Your task is to identify the language of the text I provide and accurately translate it into the specified target language while preserving the meaning, tone, and nuance of the original text. Please maintain proper grammar, spelling, and punctuation in the translated version. Do not provide any additional information or context beyond the translation itself.",
+    )
 
-    translation_response = OPENAI_CLIENT.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": [{"type": "text", "text": "Translate the following text into English."}]},
-                {"role": "user", "content": [{"type": "text", "text": text}]}
-            ]
-        )
-
-    return translation_response.choices[0].message.content
+    return translation
 
 
 @log_time
@@ -236,5 +235,21 @@ def prompt_claude(
     print(f"Prompt Tokens:   {message.usage.input_tokens:>7}")
     print(f"Response Tokens: {message.usage.output_tokens:>7}")
 
-    return message.content
+    return message.content[0].text
 
+
+def translate_via_claude(text, target_lang="English", model=DEFAULT_ANTHROPIC_MODEL):
+    """
+    Translate text into a target language using the Anthropic API.
+    """
+
+    translation = prompt_claude(
+        messages=[
+            {"text": f"Translate the following text into {target_lang.title()}."},
+            {"text": text}
+        ],
+        model=model,
+        system_prompt="You are a highly skilled translator with expertise in many languages. Your task is to identify the language of the text I provide and accurately translate it into the specified target language while preserving the meaning, tone, and nuance of the original text. Please maintain proper grammar, spelling, and punctuation in the translated version. Do not provide any additional information or context beyond the translation itself.",
+    )
+
+    return translation
