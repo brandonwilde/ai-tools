@@ -20,7 +20,7 @@ def log_time(func):
         # Extract the model argument
         model = bound_args.arguments.get('model', None)
 
-        print(f'LLM "{model}" called...')
+        print(f'Calling LLM "{model}"...')
 
         start = time.time()
         result = func(*args, **kwargs)

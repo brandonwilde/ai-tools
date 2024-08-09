@@ -1,5 +1,6 @@
-from typing import List
+from typing import List, Literal
 
+from media_tools.models import ALL_MODELS
 from media_tools.utils import encode_image, log_time
 
 DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
@@ -92,8 +93,14 @@ def prompt_openai(
         messages=formatted_messages,
     )
 
-    print(f"Prompt Tokens:   {chat_response.usage.prompt_tokens:>7}")
-    print(f"Response Tokens: {chat_response.usage.completion_tokens:>7}")
+    tok_in = chat_response.usage.prompt_tokens
+    tok_out = chat_response.usage.completion_tokens
+    cost = tok_in * ALL_MODELS[model]['input_cost_per_M'] / 1000000 + \
+        tok_out * ALL_MODELS[model]['output_cost_per_M'] / 1000000
+    
+    print(f"Prompt Tokens:   {tok_in:>7}")
+    print(f"Response Tokens: {tok_out:>7}")
+    print(f"Cost:           ${cost:.5f}")
 
     return chat_response.choices[0].message.content
 
@@ -232,8 +239,14 @@ def prompt_claude(
         messages=formatted_messages
     )
 
-    print(f"Prompt Tokens:   {message.usage.input_tokens:>7}")
-    print(f"Response Tokens: {message.usage.output_tokens:>7}")
+    tok_in = message.usage.input_tokens
+    tok_out = message.usage.output_tokens
+    cost = tok_in * ALL_MODELS[model]['input_cost_per_M'] / 1000000 + \
+        tok_out * ALL_MODELS[model]['output_cost_per_M'] / 1000000
+    
+    print(f"Prompt Tokens:   {tok_in:>7}")
+    print(f"Response Tokens: {tok_out:>7}")
+    print(f"Cost:           ${cost:.5f}")
 
     return message.content[0].text
 
