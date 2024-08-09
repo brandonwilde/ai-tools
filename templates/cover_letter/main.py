@@ -15,36 +15,28 @@ if str(root_path) not in sys.path:
     sys.path.append(str(root_path))
 #--------------------------------------------------#
 
-from media_tools.text_tools import prompt_openai
+from media_tools.text_tools import prompt_openai, prompt_claude
 from media_tools.utils import filenamify
 
+args = {
+    "company_name": "",
+    "job_title": "",
+    "job_description": "", # Reads from file if empty
+    "previous_cover_letters": "", # Reads from file if empty
+    "resume": "", # Reads from file if empty
+}
 
-company_name = ""
-
-job_title = ""
-
-job_description = "" # Reads from file if empty
-
-previous_cover_letters = "" # Reads from file if empty
 
 parent_dir = Path(__file__).parent
 
-for path in [parent_dir, root_path]:
-    if (description_path := path / "job_description.txt").exists():
-        with open(description_path, "r") as f:
-            job_description = f.read()
-        break
-if not job_description:
-    raise Exception("Please provide the job description in a file named 'job_description.txt'.")
-
-for path in [parent_dir, root_path]:
-    if (letters_path := path / "previous_cover_letters.txt").exists():
-        with open(letters_path, "r") as f:
-            previous_cover_letters = f.read()
-        break
-if not previous_cover_letters:
-    raise Exception("Please provide previous cover letters in a file named 'previous_cover_letters.txt'.")
-
+for arg in ["job_description", "previous_cover_letters", "resume"]:
+    for path in [parent_dir, root_path]:
+        if (arg_path := path / f"{arg}.txt").exists():
+            with open(arg_path, "r") as f:
+                args[arg] = f.read()
+            break
+        if not args[arg]:
+            raise Exception(f"Please provide the {arg.replace('_',' ')} in a file named '{arg}.txt'.")
 
 
 prompt_template = """
@@ -57,6 +49,10 @@ You are an AI assistant tasked with helping create a great cover letter for a co
 <previous_cover_letters>
 {PREVIOUS_COVER_LETTERS}
 </previous_cover_letters>
+
+<resume>
+{RESUME}
+</resume>
 
 2. **SELECT** - Select the cover letter from the previous cover letters that best represents the applicant for the new position. Print this letter verbatim within <selected_letter> tags.
 
@@ -73,7 +69,7 @@ Print the revised letter within <revised_letter> tags.
 
 Provide your answers within <analysis> tags.
 
-5. **RESEARCH** - Identify statements and claims from *the previous cover letters* that could be used to fill in the letter's current data gaps. Make sure to pull this information from the previous cover letters and *NOT* from the job description. List these facts within <relevant_facts> tags.
+5. **RESEARCH** - Identify statements and claims from *the previous cover letters* AND *the provided resume* that could be used to fill in the letter's current data gaps. Make sure to pull this information from the previous cover letters and *NOT* from the job description. List these facts within <relevant_facts> tags, also including the specific source document of each fact.
 
 6. **FINALIZE** - Make adjustments to the letter by removing irrelevant information and adding relevant information found in the previous letters. Be discrete and tasteful, refraining from unnecessary phrases like \"this experience matches your requirements\". Print the final version of the letter within <final_letter> tags.
 
@@ -84,14 +80,23 @@ Remember to think carefully about each step before providing your response. Use 
 
 
 prompt = prompt_template.format(
-    JOB_DESCRIPTION=job_description,
-    PREVIOUS_COVER_LETTERS=previous_cover_letters,
-    COMPANY_NAME=company_name,
-    JOB_TITLE=job_title,
+    COMPANY_NAME=args["company_name"],
+    JOB_TITLE=args["job_title"],
+    JOB_DESCRIPTION=args["job_description"],
+    PREVIOUS_COVER_LETTERS=args["previous_cover_letters"],
+    RESUME=args["resume"],
 )
 
-response = prompt_openai(messages=[{"text": "Wazzzzupp"}])
+response = prompt_openai(
+    messages=[{"text": prompt}],
+    model="gpt-4o-mini",
+)
+# response = prompt_claude(
+#     messages=[{"text": prompt}],
+#     model="claude-3-haiku-20240307",
+#     max_tokens=4096
+# )
 
-output_file = parent_dir / f"cover_letter_{filenamify(company_name)}.xml"
+output_file = parent_dir / f"cover_letter_{filenamify(args['company_name'])}.xml"
 with open(output_file, "w") as f:
     f.write(response)
