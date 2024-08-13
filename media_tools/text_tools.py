@@ -1,6 +1,6 @@
 from typing import List, Literal
 
-from media_tools.models import ALL_MODELS
+from media_tools.models import ALL_MODELS, ModelsList
 from media_tools.utils import encode_image, log_time
 
 DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
@@ -162,19 +162,31 @@ def chat_with_openai(messages=[], model=DEFAULT_OPENAI_MODEL, system_prompt="You
         print()
 
 
-def translate_via_openai(text, target_lang="English", model=DEFAULT_OPENAI_MODEL):
+def translate(text, target_lang="English", model:ModelsList = DEFAULT_OPENAI_MODEL):
     """
     Translate text into a target language using the OpenAI API.
     """
 
-    translation = prompt_openai(
-        messages=[
-            {"text": f"Translate the following text into {target_lang.title()}."},
-            {"text": text}
-        ],
-        model=model,
-        system_prompt="You are a highly skilled translator with expertise in many languages. Your task is to identify the language of the text I provide and accurately translate it into the specified target language while preserving the meaning, tone, and nuance of the original text. Please maintain proper grammar, spelling, and punctuation in the translated version. Do not provide any additional information or context beyond the translation itself.",
-    )
+    model_info = ALL_MODELS[model]
+    messages = [
+        {"text": f"Translate the following text into {target_lang.title()}."},
+        {"text": text}
+    ]
+    system_prompt = "You are a highly skilled translator with expertise in many languages. Your task is to identify the language of the text I provide and accurately translate it into the specified target language while preserving the meaning, tone, and nuance of the original text. Please maintain proper grammar, spelling, and punctuation in the translated version. Do not provide any additional information or context beyond the translation itself."
+
+    if model_info['provider'] == "openai":
+        translation = prompt_openai(
+            messages=messages,
+            model=model,
+            system_prompt=system_prompt,
+        )
+    
+    elif model_info['provider'] == "anthropic":
+        translation = prompt_claude(
+            messages=messages,
+            model=model,
+            system_prompt=system_prompt,
+        )
 
     return translation
 
@@ -249,20 +261,3 @@ def prompt_claude(
     print(f"Cost:           ${cost:.5f}")
 
     return message.content[0].text
-
-
-def translate_via_claude(text, target_lang="English", model=DEFAULT_ANTHROPIC_MODEL):
-    """
-    Translate text into a target language using the Anthropic API.
-    """
-
-    translation = prompt_claude(
-        messages=[
-            {"text": f"Translate the following text into {target_lang.title()}."},
-            {"text": text}
-        ],
-        model=model,
-        system_prompt="You are a highly skilled translator with expertise in many languages. Your task is to identify the language of the text I provide and accurately translate it into the specified target language while preserving the meaning, tone, and nuance of the original text. Please maintain proper grammar, spelling, and punctuation in the translated version. Do not provide any additional information or context beyond the translation itself.",
-    )
-
-    return translation

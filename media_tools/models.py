@@ -1,3 +1,12 @@
+from typing import Literal
+
+ModelsList = Literal[
+    "gpt-4o-mini",
+    "gpt-3.5-turbo",
+    "claude-3-5-sonnet-20240620",
+    "claude-3-haiku-20240307",
+    ]
+
 ALL_MODELS = {}
 
 OPENAI_MODELS = {
