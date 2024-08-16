@@ -1,100 +1,59 @@
-from typing import List, Literal
+from typing import List
 
 from media_tools.models import ALL_MODELS, ModelsList
-from media_tools.utils import encode_image, log_time
+from media_tools.utils import log_time
 
-DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
-DEFAULT_ANTHROPIC_MODEL = "claude-3-5-sonnet-20240620"
-
-# TODO: Update Anthropic LLM calls to handle images as well.
-
-
-def format_openai_messages(messages: List[dict] = [], system_prompt=""):
-    '''
-    Format messages for submission to an OpenAI model.
-
-    Args:
-    - messages (List[dict]): A list of messages to the LLM. Each message is a dictionary with one of the following fields:
-        - text (str): A text message.
-        - code (str): A code snippet.
-        - image (str): The path to an image.
-    '''
-
-    user_content = []
-
-    for message in messages:
-        if 'text' in message:
-            user_content.append({
-                "type": "text",
-                "text": message['text']
-            })
-        elif 'code' in message:
-            user_content.append({
-                "type": "text",
-                "text": f"```html\n{message['code']}\n```"
-            })
-        elif 'image' in message:
-            base64_image = encode_image(message['image'])
-            user_content.append({
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:image/jpeg;base64,{base64_image}"
-                }
-            })
-            
-    formatted_system_prompt = [{
-        "role": "system",
-        "content": [
-            {
-                "type": "text",
-                "text": system_prompt,
-            }
-        ]
-    }]
-
-    if user_content:
-        return formatted_system_prompt + [{
-            "role": "user",
-            "content": user_content
-        }]
-
-    return formatted_system_prompt
+DEFAULT_LLM = "gpt-4o-mini"
 
 
 @log_time
-def prompt_openai(
-        messages: List[dict],
-        model=DEFAULT_OPENAI_MODEL,
-        system_prompt="You are a helpful assistant.",
-    ):
+def prompt_llm(
+    messages: List[dict],
+    model:ModelsList = DEFAULT_LLM,
+    system_prompt="You are a helpful assistant.",
+    max_tokens=1000,
+    temperature=1,
+):
     """
-    Get a response from an OpenAI LLM.
+    Get a response from an LLM.
 
     Args:
     - messages (List[dict]): A list of messages to the LLM. Each message is a dictionary with one of the following fields:
         - text (str): A text message.
         - code (str): A code snippet.
         - image (str): The path to an image.
-    - model (str): The OpenAI model to use.
+    - model (str): The LLM to use.
     - system_prompt (str): The system prompt to use.
+    - max_tokens (int): The maximum number of tokens to generate.
+    - temperature (float): The temperature to use for token sampling.
 
     Returns:
     - str: The response from the LLM.
     """
+    
+    model_info = ALL_MODELS[model]
 
-    from third_party_apis.openai_tools import (
-        CLIENT as OPENAI_CLIENT,
-    )
+    assert max_tokens <= model_info['output_limit'], f"Max_tokens must be less than or equal to {model_info['output_limit']} for {model}."
 
-    formatted_messages = format_openai_messages(messages, system_prompt)
+    provider = ALL_MODELS[model]['provider']
 
-    chat_response = OPENAI_CLIENT.chat.completions.create(
+    if provider == "openai":
+        from third_party_apis.openai_tools import prompt_openai as _prompt_model
+    elif provider == "anthropic":
+        from third_party_apis.anthropic_tools import prompt_claude as _prompt_model
+    else:
+        raise ValueError(f"Provider '{provider}' is not yet supported. Add basic prompting function for this provider.")
+
+    response = _prompt_model(
+        messages=messages,
         model=model,
-        messages=formatted_messages,
+        system_prompt=system_prompt,
+        max_tokens=max_tokens,
+        temperature=temperature
     )
 
-    tok_in = chat_response.usage.prompt_tokens
-    tok_out = chat_response.usage.completion_tokens
+    tok_in = response['input_tokens']
+    tok_out = response['output_tokens']
     cost = tok_in * ALL_MODELS[model]['input_cost_per_M'] / 1000000 + \
         tok_out * ALL_MODELS[model]['output_cost_per_M'] / 1000000
     
@@ -102,67 +61,29 @@ def prompt_openai(
     print(f"Response Tokens: {tok_out:>7}")
     print(f"Cost:           ${cost:.5f}")
 
-    return chat_response.choices[0].message.content
+    return response["text"]
 
 
-def chat_with_openai(messages=[], model=DEFAULT_OPENAI_MODEL, system_prompt="You are a helpful assistant."):
+def chat_with_llm(messages=[], model=DEFAULT_LLM, system_prompt="You are a helpful assistant."):
     """
     Conversational interface with the OpenAI API.
     Can optionally include a list of messages to start the conversation.
     """
 
-    from third_party_apis.openai_tools import (
-        CLIENT as OPENAI_CLIENT,
+    model_info = ALL_MODELS[model]
+    if model_info['provider'] == "openai":
+        from third_party_apis.openai_tools import chat_with_openai as _chat_with_llm
+    else:
+        raise ValueError(f"Provider '{model_info['provider']}' is not yet supported. Add chat function for this provider.")
+    
+    _chat_with_llm(
+        messages=messages,
+        model=model, 
+        system_prompt=system_prompt
     )
 
-    for m in messages:
-        print("User:", m['text'], '\n')
-        
-    formatted_messages = format_openai_messages(messages, system_prompt)
 
-
-    while True:
-        chat_response = OPENAI_CLIENT.chat.completions.create(
-            model=model,
-            messages=formatted_messages,
-            stream=True,
-        )
-
-        print("Assistant: ", end='')
-
-        collected_messages = []
-        for chunk in chat_response:
-            chunk_message = chunk.choices[0].delta.content
-            if chunk_message is not None:
-                collected_messages.append(chunk_message)
-                print(chunk.choices[0].delta.content, end='')
-
-        full_response = ''.join(collected_messages)
-        print('\n')
-
-        formatted_messages.append({
-            "role": "assistant",
-            "content": [
-                {
-                    "type": "text",
-                    "text": full_response
-                }
-            ]
-        })
-        
-        formatted_messages.append({
-            "role": "user",
-            "content": [
-                {
-                    "type": "text",
-                    "text": input("User: ")
-                }
-            ]
-        })
-        print()
-
-
-def translate(text, target_lang="English", model:ModelsList = DEFAULT_OPENAI_MODEL):
+def translate(text, target_lang="English", model:ModelsList = DEFAULT_LLM):
     """
     Translate text into a target language using the OpenAI API.
     """
@@ -175,89 +96,17 @@ def translate(text, target_lang="English", model:ModelsList = DEFAULT_OPENAI_MOD
     system_prompt = "You are a highly skilled translator with expertise in many languages. Your task is to identify the language of the text I provide and accurately translate it into the specified target language while preserving the meaning, tone, and nuance of the original text. Please maintain proper grammar, spelling, and punctuation in the translated version. Do not provide any additional information or context beyond the translation itself."
 
     if model_info['provider'] == "openai":
-        translation = prompt_openai(
-            messages=messages,
-            model=model,
-            system_prompt=system_prompt,
-        )
-    
+        from third_party_apis.openai_tools import prompt_openai as _prompt_model
     elif model_info['provider'] == "anthropic":
-        translation = prompt_claude(
-            messages=messages,
-            model=model,
-            system_prompt=system_prompt,
-        )
-
-    return translation
-
-
-@log_time
-def prompt_claude(
-        messages: List[dict],
-        model=DEFAULT_ANTHROPIC_MODEL,
-        system_prompt="You are a helpful assistant.",
-        max_tokens=1000,
-        temperature=0,
-    ):
-    """
-    Get a response from a Claude LLM.
-
-    Args:
-    - messages (List[dict]): A list of messages to the LLM. Each message is a dictionary with one of the following fields:
-        - text (str): A text message.
-        - code (str): A code snippet.
-        - image (str): The path to an image.
-    - model (str): The Claude model to use.
-    - system_prompt (str): The system prompt to use.
-
-    Returns:
-    - str: The response from the LLM.
-    """
-
-    from third_party_apis.anthropic_tools import (
-        CLIENT as ANTHROPIC_CLIENT,
-    )
-
-    user_content = []
-    for message in messages:
-        if 'text' in message:
-            user_content.append({
-                "type": "text",
-                "text": message['text']
-            })
-        elif 'code' in message:
-            user_content.append({
-                "type": "text",
-                "text": f"```\n{message['code']}\n```"
-            })
-        elif 'image' in message:
-            user_content.append({
-                "type": "image_url",
-                "image_url": {
-                    "path": message['image']
-                }
-            })
-
-    formatted_messages = [{
-        "role": "user",
-        "content": user_content
-    }]
-
-    message = ANTHROPIC_CLIENT.messages.create(
-        model=model,
-        max_tokens=max_tokens,
-        temperature=temperature,
-        system=system_prompt,
-        messages=formatted_messages
-    )
-
-    tok_in = message.usage.input_tokens
-    tok_out = message.usage.output_tokens
-    cost = tok_in * ALL_MODELS[model]['input_cost_per_M'] / 1000000 + \
-        tok_out * ALL_MODELS[model]['output_cost_per_M'] / 1000000
+        from third_party_apis.anthropic_tools import prompt_claude as _prompt_model
+    else:
+        raise ValueError(f"Provider '{model_info['provider']}' is not yet supported. Add basic prompting function for this provider.")
     
-    print(f"Prompt Tokens:   {tok_in:>7}")
-    print(f"Response Tokens: {tok_out:>7}")
-    print(f"Cost:           ${cost:.5f}")
+    translation = _prompt_model(
+        messages=messages,
+        model=model,
+        system_prompt=system_prompt,
+        temperature=1
+    )
 
-    return message.content[0].text
+    return translation['text']

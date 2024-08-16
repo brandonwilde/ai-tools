@@ -1,5 +1,6 @@
 from typing import Literal
 
+# Keep this list updated for accurate type-checking
 ModelsList = Literal[
     "gpt-4o-mini",
     "gpt-3.5-turbo",
