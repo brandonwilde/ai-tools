@@ -22,6 +22,7 @@ def log_token_usage(response, model):
 
     return
 
+
 @log_time
 def prompt_llm(
     messages: List[dict],
@@ -92,33 +93,27 @@ def chat_with_llm(messages=[], model=DEFAULT_LLM, system_prompt="You are a helpf
         system_prompt=system_prompt
     )
 
-@log_time
-def translate(text, target_lang="English", model:ModelsList = DEFAULT_LLM):
+
+def translate(
+    text: str,
+    target_lang="English",
+    model:ModelsList = DEFAULT_LLM
+):
     """
-    Translate text into a target language using the OpenAI API.
+    Translate text into a target language.
     """
 
-    model_info = ALL_MODELS[model]
     messages = [
         {"text": f"Translate the following text into {target_lang.title()}."},
         {"text": text}
     ]
     system_prompt = "You are a highly skilled translator with expertise in many languages. Your task is to identify the language of the text I provide and accurately translate it into the specified target language while preserving the meaning, tone, and nuance of the original text. Please maintain proper grammar, spelling, and punctuation in the translated version. Do not provide any additional information or context beyond the translation itself."
 
-    if model_info['provider'] == "openai":
-        from third_party_apis.openai_tools import prompt_openai as _prompt_model
-    elif model_info['provider'] == "anthropic":
-        from third_party_apis.anthropic_tools import prompt_claude as _prompt_model
-    else:
-        raise ValueError(f"Provider '{model_info['provider']}' is not yet supported. Add basic prompting function for this provider.")
-    
-    translation = _prompt_model(
+    translation = prompt_llm(
         messages=messages,
         model=model,
         system_prompt=system_prompt,
-        temperature=1
+        temperature=0
     )
 
-    log_token_usage(translation, model)
-
-    return translation['text']
+    return translation
