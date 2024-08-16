@@ -6,6 +6,22 @@ from media_tools.utils import log_time
 DEFAULT_LLM = "gpt-4o-mini"
 
 
+def log_token_usage(response, model):
+    '''
+    Log the token usage and cost of a response from an LLM.
+    '''
+    
+    tok_in = response['input_tokens']
+    tok_out = response['output_tokens']
+    cost = tok_in * ALL_MODELS[model]['input_cost_per_M'] / 1000000 + \
+        tok_out * ALL_MODELS[model]['output_cost_per_M'] / 1000000
+    
+    print(f"Prompt Tokens:   {tok_in:>7}")
+    print(f"Response Tokens: {tok_out:>7}")
+    print(f"Cost:           ${cost:.5f}")
+
+    return
+
 @log_time
 def prompt_llm(
     messages: List[dict],
@@ -52,14 +68,7 @@ def prompt_llm(
         temperature=temperature
     )
 
-    tok_in = response['input_tokens']
-    tok_out = response['output_tokens']
-    cost = tok_in * ALL_MODELS[model]['input_cost_per_M'] / 1000000 + \
-        tok_out * ALL_MODELS[model]['output_cost_per_M'] / 1000000
-    
-    print(f"Prompt Tokens:   {tok_in:>7}")
-    print(f"Response Tokens: {tok_out:>7}")
-    print(f"Cost:           ${cost:.5f}")
+    log_token_usage(response, model)
 
     return response["text"]
 
@@ -82,7 +91,7 @@ def chat_with_llm(messages=[], model=DEFAULT_LLM, system_prompt="You are a helpf
         system_prompt=system_prompt
     )
 
-
+@log_time
 def translate(text, target_lang="English", model:ModelsList = DEFAULT_LLM):
     """
     Translate text into a target language using the OpenAI API.
@@ -108,5 +117,7 @@ def translate(text, target_lang="English", model:ModelsList = DEFAULT_LLM):
         system_prompt=system_prompt,
         temperature=1
     )
+
+    log_token_usage(translation, model)
 
     return translation['text']
