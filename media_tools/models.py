@@ -10,6 +10,9 @@ ModelsList = Literal[
 
 ALL_MODELS = {}
 
+OPENAI_INFO = {
+    "max_temp": 2,
+}
 OPENAI_MODELS = {
     "gpt-4o-mini": {
         "input_limit": 128000,
@@ -25,9 +28,11 @@ OPENAI_MODELS = {
     },
 }
 for model_name, model_data in OPENAI_MODELS.items():
-    ALL_MODELS[model_name] = {**model_data, "provider": "openai"}
+    ALL_MODELS[model_name] = {**model_data, "provider": "openai", **OPENAI_INFO}
 
-
+ANTHROPIC_INFO = {
+    "max_temp": 1,
+}
 ANTHROPIC_MODELS = {
     "claude-3-5-sonnet-20240620": {
         "input_limit": 200000,
@@ -43,4 +48,4 @@ ANTHROPIC_MODELS = {
     },
 }
 for model_name, model_data in ANTHROPIC_MODELS.items():
-    ALL_MODELS[model_name] = {**model_data, "provider": "anthropic"}
+    ALL_MODELS[model_name] = {**model_data, "provider": "anthropic", **ANTHROPIC_INFO}

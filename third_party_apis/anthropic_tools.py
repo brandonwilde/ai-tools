@@ -4,7 +4,7 @@ from typing import List
 import anthropic
 
 ANTHROPIC_API_KEY=os.environ.get('ANTHROPIC_API_KEY')
-DEFAULT_ANTHROPIC_MODEL = "claude-3-5-sonnet-20240620"
+DEFAULT_ANTHROPIC_MODEL = "claude-3-haiku-20240307"
 
 # TODO: Update Anthropic prompt function to handle images as well.
 # TODO: Add Anthropic chat function

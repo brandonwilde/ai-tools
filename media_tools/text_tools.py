@@ -49,8 +49,9 @@ def prompt_llm(
     
     model_info = ALL_MODELS[model]
 
-    assert max_tokens <= model_info['output_limit'], f"Max_tokens must be less than or equal to {model_info['output_limit']} for {model}."
-
+    assert max_tokens <= model_info['output_limit'], f"max_tokens must be less than or equal to {model_info['output_limit']} for {model}, but you requested up to {max_tokens} tokens."
+    assert 0 <= temperature <= model_info['max_temp'], f"Permissible temperature values range from 0 to {model_info['max_temp']} for {model}, but you requested a temp of {temperature}."
+    
     provider = ALL_MODELS[model]['provider']
 
     if provider == "openai":
