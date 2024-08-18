@@ -3,6 +3,8 @@ from typing import List
 
 import anthropic
 
+from media_tools.utils import encode_image
+
 ANTHROPIC_API_KEY=os.environ.get('ANTHROPIC_API_KEY')
 DEFAULT_ANTHROPIC_MODEL = "claude-3-haiku-20240307"
 
@@ -41,10 +43,17 @@ def format_claude_messages(messages: List[dict] = []):
                 "text": f"```\n{message['code']}\n```"
             })
         elif 'image' in message:
+            _, ext = os.path.splitext(message['image'])
+            assert ext in ["png", "jpg", "jpeg", "gif", "webp"], f"Image must be a PNG, JPEG, GIF, or WEBP file, but you provided a {ext} file."
+            if ext == "jpg":
+                ext = "jpeg"
+            base64_image = encode_image(message['image'])
             user_content.append({
-                "type": "image_url",
-                "image_url": {
-                    "path": message['image']
+                "type": "image",
+                "source": {
+                    "type": "base64",
+                    "media_type": f"image/{ext}",
+                    "data": base64_image,
                 }
             })
 
