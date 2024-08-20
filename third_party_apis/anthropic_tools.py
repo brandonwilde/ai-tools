@@ -43,7 +43,8 @@ def format_claude_messages(messages: List[dict] = []):
                 "text": f"```\n{message['code']}\n```"
             })
         elif 'image' in message:
-            _, ext = os.path.splitext(message['image'])
+            _, dot_ext = os.path.splitext(message['image'])
+            ext = dot_ext.strip('.').lower()
             assert ext in ["png", "jpg", "jpeg", "gif", "webp"], f"Image must be a PNG, JPEG, GIF, or WEBP file, but you provided a {ext} file."
             if ext == "jpg":
                 ext = "jpeg"
