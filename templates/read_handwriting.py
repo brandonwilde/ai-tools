@@ -15,7 +15,7 @@ if str(root_path) not in sys.path:
     sys.path.append(str(root_path))
 #--------------------------------------------------#
 
-from media_tools.text_tools import prompt_openai
+from media_tools.text_tools import prompt_llm
 
 
 system_prompt = "You are expert in deciphering difficult-to-read handwriting. You are now correcting a poor transcription of an excerpt from the journals of a Mormon missionary in eastern Canada. Note that when the author writes an 'I', it sometimes looks like an 'S' or a '2'."
@@ -45,6 +45,6 @@ messages = [
     {'text': transcription}
 ]
 
-result = prompt_openai(messages, system_prompt=system_prompt)
+result = prompt_llm(messages, system_prompt=system_prompt, model="claude-3-haiku-20240307")
 
 print(result)

@@ -15,7 +15,7 @@ if str(root_path) not in sys.path:
     sys.path.append(str(root_path))
 #--------------------------------------------------#
 
-from media_tools.text_tools import prompt_openai, prompt_claude
+from media_tools.text_tools import prompt_llm
 from media_tools.utils import filenamify
 
 args = {
@@ -87,15 +87,11 @@ prompt = prompt_template.format(
     RESUME=args["resume"],
 )
 
-response = prompt_openai(
+response = prompt_llm(
     messages=[{"text": prompt}],
-    model="gpt-4o-mini",
+    model="claude-3-haiku-20240307",
+    max_tokens=4096
 )
-# response = prompt_claude(
-#     messages=[{"text": prompt}],
-#     model="claude-3-haiku-20240307",
-#     max_tokens=4096
-# )
 
 output_file = parent_dir / f"cover_letter_{filenamify(args['company_name'])}.xml"
 with open(output_file, "w") as f:

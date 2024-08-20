@@ -15,7 +15,7 @@ if str(root_path) not in sys.path:
     sys.path.append(str(root_path))
 #--------------------------------------------------#
 
-from media_tools.text_tools import prompt_openai
+from media_tools.text_tools import prompt_llm
 
 
 html_code = ""
@@ -37,6 +37,6 @@ messages = [
     {'text': "How can I fix the alignment so that the book review modal content is to the right of the X rather than below it?"}
 ]
 
-result = prompt_openai(messages, system_prompt=system_prompt)
+result = prompt_llm(messages, system_prompt=system_prompt)
 
 print(result)
