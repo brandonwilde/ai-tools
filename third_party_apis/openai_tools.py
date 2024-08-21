@@ -108,54 +108,33 @@ def prompt_openai(
     }
 
 
-def chat_with_openai(messages=[], model=DEFAULT_OPENAI_MODEL, system_prompt="You are a helpful assistant."):
+def stream_openai(
+        formatted_messages: List[dict],
+        model=DEFAULT_OPENAI_MODEL,
+        system_prompt="",
+        max_tokens=1024,
+        temperature=1,
+    ):
     """
-    Conversational interface with the OpenAI API.
-    Can optionally include a list of messages to start the conversation.
+    Stream a response from an OpenAI LLM.
+    Prints the response as it is generated.
+
+    *System prompt not used here, but included for consistency with Anthropic stream function.
     """
 
-    for m in messages:
-        print("User:", m['text'], '\n')
-        
-    formatted_messages = format_openai_messages(messages, system_prompt)
+    chat_response = CLIENT.chat.completions.create(
+        model=model,
+        messages=formatted_messages,
+        stream=True,
+        max_tokens=max_tokens,
+        temperature=temperature,
+    )
 
+    collected_messages = []
+    for chunk in chat_response:
+        chunk_message = chunk.choices[0].delta.content
+        if chunk_message is not None:
+            collected_messages.append(chunk_message)
+            print(chunk.choices[0].delta.content, end='')
 
-    while True:
-        chat_response = CLIENT.chat.completions.create(
-            model=model,
-            messages=formatted_messages,
-            stream=True,
-        )
-
-        print("Assistant: ", end='')
-
-        collected_messages = []
-        for chunk in chat_response:
-            chunk_message = chunk.choices[0].delta.content
-            if chunk_message is not None:
-                collected_messages.append(chunk_message)
-                print(chunk.choices[0].delta.content, end='')
-
-        full_response = ''.join(collected_messages)
-        print('\n')
-
-        formatted_messages.append({
-            "role": "assistant",
-            "content": [
-                {
-                    "type": "text",
-                    "text": full_response
-                }
-            ]
-        })
-        
-        formatted_messages.append({
-            "role": "user",
-            "content": [
-                {
-                    "type": "text",
-                    "text": input("User: ")
-                }
-            ]
-        })
-        print()
+    return ''.join(collected_messages)

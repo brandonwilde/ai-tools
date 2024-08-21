@@ -75,7 +75,13 @@ def prompt_llm(
     return response["text"]
 
 
-def chat_with_llm(messages=[], model=DEFAULT_LLM, system_prompt="You are a helpful assistant."):
+def chat_with_llm(
+    messages:List[dict] = [],
+    model:ModelsList = DEFAULT_LLM,
+    system_prompt="You are a helpful assistant.",
+    max_tokens=1024,
+    temperature=1,
+):
     """
     Conversational interface with the OpenAI API.
     Can optionally include a list of messages to start the conversation.
@@ -83,15 +89,66 @@ def chat_with_llm(messages=[], model=DEFAULT_LLM, system_prompt="You are a helpf
 
     model_info = ALL_MODELS[model]
     if model_info['provider'] == "openai":
-        from third_party_apis.openai_tools import chat_with_openai as _chat_with_llm
+        from third_party_apis.openai_tools import (
+            stream_openai as _stream_llm,
+            format_openai_messages as _format_messages
+        )
+    elif model_info['provider'] == "anthropic":
+        from third_party_apis.anthropic_tools import (
+            stream_claude as _stream_llm,
+            format_claude_messages as _format_messages
+        )
     else:
         raise ValueError(f"Provider '{model_info['provider']}' is not yet supported. Add chat function for this provider.")
-    
-    _chat_with_llm(
-        messages=messages,
-        model=model, 
-        system_prompt=system_prompt
-    )
+
+    if not messages:
+        messages = [
+            {
+                "text": input("Start the conversation: ")
+            }
+        ]
+        print()
+
+    else:
+        for m in messages:
+            if m['type'] == 'text':
+                print("User:", m['text'], '\n')
+            elif 'image' in m['type']:
+                print("User: [Image]", '\n')
+
+    formatted_messages = _format_messages(messages, system_prompt)
+
+    while True:
+        print("Assistant: ", end='', flush=True)
+        response = _stream_llm(
+            formatted_messages=formatted_messages,
+            model=model,
+            system_prompt=system_prompt,
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
+        print('\n')
+
+        formatted_messages.append({
+            "role": "assistant",
+            "content": [
+                {
+                    "type": "text",
+                    "text": response
+                }
+            ]
+        })
+        
+        formatted_messages.append({
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": input("User: ")
+                }
+            ]
+        })
+        print()
 
 
 def translate(
