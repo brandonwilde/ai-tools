@@ -1,5 +1,8 @@
 import os
 import subprocess
+from typing import BinaryIO
+
+from media_tools.models import TTSList
 
 
 def convert_to_mp3(filepath):
@@ -15,17 +18,16 @@ def convert_to_mp3(filepath):
     return output_file
 
 
-def transcribe_via_whisper(audio_file):
+def transcribe(
+    audio_file: BinaryIO,
+    model:TTSList = "whisper-1",
+):
     """
     Transcribe an audio file using the Whisper model.
     """
 
-    from third_party_apis.openai_tools import CLIENT as OPENAI_CLIENT
+    from third_party_apis.openai_tools import transcribe_via_whisper as _transcribe
 
-    transcription_response = OPENAI_CLIENT.audio.transcriptions.create(
-        model="whisper-1", 
-        file=audio_file,
-        response_format='verbose_json',
-    )
+    transcription_response = _transcribe(audio_file)
 
     return transcription_response

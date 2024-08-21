@@ -1,6 +1,6 @@
 from typing import List
 
-from media_tools.models import ALL_MODELS, ModelsList
+from media_tools.models import ALL_LLMS, LLMsList
 from media_tools.utils import log_time
 
 DEFAULT_LLM = "gpt-4o-mini"
@@ -13,8 +13,8 @@ def log_token_usage(response, model):
     
     tok_in = response['input_tokens']
     tok_out = response['output_tokens']
-    cost = tok_in * ALL_MODELS[model]['input_cost_per_M'] / 1000000 + \
-        tok_out * ALL_MODELS[model]['output_cost_per_M'] / 1000000
+    cost = tok_in * ALL_LLMS[model]['input_cost_per_M'] / 1000000 + \
+        tok_out * ALL_LLMS[model]['output_cost_per_M'] / 1000000
     
     print(f"Prompt Tokens:   {tok_in:>7}")
     print(f"Response Tokens: {tok_out:>7}")
@@ -26,7 +26,7 @@ def log_token_usage(response, model):
 @log_time
 def prompt_llm(
     messages: List[dict],
-    model:ModelsList = DEFAULT_LLM,
+    model:LLMsList = DEFAULT_LLM,
     system_prompt="You are a helpful assistant.",
     max_tokens=1000,
     temperature=1,
@@ -48,12 +48,12 @@ def prompt_llm(
     - str: The response from the LLM.
     """
     
-    model_info = ALL_MODELS[model]
+    model_info = ALL_LLMS[model]
 
     assert max_tokens <= model_info['output_limit'], f"max_tokens must be less than or equal to {model_info['output_limit']} for {model}, but you requested up to {max_tokens} tokens."
     assert 0 <= temperature <= model_info['max_temp'], f"Permissible temperature values range from 0 to {model_info['max_temp']} for {model}, but you requested a temp of {temperature}."
     
-    provider = ALL_MODELS[model]['provider']
+    provider = ALL_LLMS[model]['provider']
 
     if provider == "openai":
         from third_party_apis.openai_tools import prompt_openai as _prompt_model
@@ -77,7 +77,7 @@ def prompt_llm(
 
 def chat_with_llm(
     messages:List[dict] = [],
-    model:ModelsList = DEFAULT_LLM,
+    model:LLMsList = DEFAULT_LLM,
     system_prompt="You are a helpful assistant.",
     max_tokens=1024,
     temperature=1,
@@ -87,7 +87,7 @@ def chat_with_llm(
     Can optionally include a list of messages to start the conversation.
     """
 
-    model_info = ALL_MODELS[model]
+    model_info = ALL_LLMS[model]
     if model_info['provider'] == "openai":
         from third_party_apis.openai_tools import (
             stream_openai as _stream_llm,
@@ -154,7 +154,7 @@ def chat_with_llm(
 def translate(
     text: str,
     target_lang="English",
-    model:ModelsList = DEFAULT_LLM
+    model:LLMsList = DEFAULT_LLM
 ):
     """
     Translate text into a target language.

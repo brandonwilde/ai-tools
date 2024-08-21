@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import BinaryIO, List
 
 from openai import OpenAI
 
@@ -7,7 +7,7 @@ from media_tools.utils import encode_image
 
 OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
 OPENAI_ORGANIZATION=os.environ.get('OPENAI_ORGANIZATION')
-DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
+DEFAULT_OPENAI_LLM = "gpt-4o-mini"
 
 if any([not OPENAI_API_KEY, not OPENAI_ORGANIZATION]):
     raise Exception("OPENAI_API_KEY and OPENAI_ORGANIZATION must be set as environment variables.")
@@ -72,7 +72,7 @@ def format_openai_messages(messages: List[dict] = [], system_prompt=""):
 
 def prompt_openai(
         messages: List[dict],
-        model=DEFAULT_OPENAI_MODEL,
+        model=DEFAULT_OPENAI_LLM,
         system_prompt="You are a helpful assistant.",
         max_tokens=1000,
         temperature=1,
@@ -110,7 +110,7 @@ def prompt_openai(
 
 def stream_openai(
         formatted_messages: List[dict],
-        model=DEFAULT_OPENAI_MODEL,
+        model=DEFAULT_OPENAI_LLM,
         system_prompt="",
         max_tokens=1024,
         temperature=1,
@@ -138,3 +138,22 @@ def stream_openai(
             print(chunk.choices[0].delta.content, end='')
 
     return ''.join(collected_messages)
+
+
+def transcribe_via_openai(
+    audio_file: BinaryIO,
+    verbose=True
+):
+    """
+    Transcribe an audio file using the Whisper model.
+    """
+
+    response_format = 'verbose_json' if verbose else 'json'
+
+    transcription_response = CLIENT.audio.transcriptions.create(
+        model="whisper-1", 
+        file=audio_file,
+        response_format=response_format,
+    )
+
+    return transcription_response

@@ -15,11 +15,15 @@ if str(root_path) not in sys.path:
     sys.path.append(str(root_path))
 #--------------------------------------------------#
 
-from media_tools.audio_tools import convert_to_mp3, transcribe_via_whisper
-from media_tools.text_tools import translate_via_openai
+from media_tools.audio_tools import convert_to_mp3, transcribe
+from media_tools.models import LLMsList
+from media_tools.text_tools import translate
 
 
-def transcribe_and_translate_audio(file_path, model="gpt-3.5-turbo"):
+def transcribe_and_translate_audio(
+    file_path:str,
+    llm:LLMsList = "gpt-4o-mini",
+):
     '''
     Transcribe an audio file and translate the transcription to English.
     '''
@@ -33,7 +37,7 @@ def transcribe_and_translate_audio(file_path, model="gpt-3.5-turbo"):
 
     try:
         with open(mp3_file, "rb") as audio_file:
-            transcription = transcribe_via_whisper(audio_file)
+            transcription = transcribe(audio_file)
         text = transcription.text
         print(f'\nTranscription:\n{text}\n')
     except Exception as e:
@@ -41,7 +45,7 @@ def transcribe_and_translate_audio(file_path, model="gpt-3.5-turbo"):
 
     try:
         if 'english' not in transcription.model_extra['language']:
-            translation = translate_via_openai(text,model)
+            translation = translate(text, model=llm)
             print(f'\nTranslation:\n{translation}\n')
         else:
             translation = text
@@ -51,5 +55,5 @@ def transcribe_and_translate_audio(file_path, model="gpt-3.5-turbo"):
     return {'transcription': text, 'translation': translation}
 
 
-input_file = "/home/brandon/Documents/Sound recordings/WhatsApp Ptt 2024-06-01 at 5.18.53 PM.ogg"
-transcribe_and_translate_audio(input_file)
+input_file = "data/audio/WhatsApp Ptt 2024-08-20 at 8.01.48 PM.ogg"
+transcribe_and_translate_audio(input_file, llm="gpt-4o-mini")

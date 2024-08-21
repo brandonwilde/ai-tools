@@ -6,7 +6,7 @@ import anthropic
 from media_tools.utils import encode_image
 
 ANTHROPIC_API_KEY=os.environ.get('ANTHROPIC_API_KEY')
-DEFAULT_ANTHROPIC_MODEL = "claude-3-haiku-20240307"
+DEFAULT_ANTHROPIC_LLM = "claude-3-haiku-20240307"
 
 # TODO: Update Anthropic prompt function to handle images as well.
 # TODO: Add Anthropic chat function
@@ -69,7 +69,7 @@ def format_claude_messages(messages: List[dict] = [], system_prompt=""):
 
 def prompt_claude(
         messages: List[dict],
-        model=DEFAULT_ANTHROPIC_MODEL,
+        model=DEFAULT_ANTHROPIC_LLM,
         system_prompt="You are a helpful assistant.",
         max_tokens=1000,
         temperature=1,
@@ -108,7 +108,7 @@ def prompt_claude(
 
 def stream_claude(
         formatted_messages: List[dict],
-        model=DEFAULT_ANTHROPIC_MODEL,
+        model=DEFAULT_ANTHROPIC_LLM,
         system_prompt="You are a helpful assistant.",
         max_tokens=1024,
         temperature=1,

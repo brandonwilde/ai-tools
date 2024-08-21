@@ -1,19 +1,17 @@
 from typing import Literal
 
 # Keep this list updated for accurate type-checking
-ModelsList = Literal[
+OpenaiLLMs = Literal[
     "gpt-4o-mini",
     "gpt-3.5-turbo",
-    "claude-3-5-sonnet-20240620",
-    "claude-3-haiku-20240307",
-    ]
-
-ALL_MODELS = {}
-
-OPENAI_INFO = {
+]
+OpenaiTTS = Literal[
+    "whisper-1",
+]
+OPENAI_LLM_INFO = {
     "max_temp": 2,
 }
-OPENAI_MODELS = {
+OPENAI_LLMS = {
     "gpt-4o-mini": {
         "input_limit": 128000,
         "output_limit": 16384,
@@ -27,13 +25,15 @@ OPENAI_MODELS = {
         "output_cost_per_M": 1.50,
     },
 }
-for model_name, model_data in OPENAI_MODELS.items():
-    ALL_MODELS[model_name] = {**model_data, "provider": "openai", **OPENAI_INFO}
 
-ANTHROPIC_INFO = {
+AnthropicLLMs = Literal[
+    "claude-3-5-sonnet-20240620",
+    "claude-3-haiku-20240307",
+]
+ANTHROPIC_LLM_INFO = {
     "max_temp": 1,
 }
-ANTHROPIC_MODELS = {
+ANTHROPIC_LLMS = {
     "claude-3-5-sonnet-20240620": {
         "input_limit": 200000,
         "output_limit": 8192,
@@ -47,5 +47,12 @@ ANTHROPIC_MODELS = {
         "output_cost_per_M": 1.25,
     },
 }
-for model_name, model_data in ANTHROPIC_MODELS.items():
-    ALL_MODELS[model_name] = {**model_data, "provider": "anthropic", **ANTHROPIC_INFO}
+
+ALL_LLMS = {}
+for model_name, model_data in OPENAI_LLMS.items():
+    ALL_LLMS[model_name] = {**model_data, "provider": "openai", **OPENAI_LLM_INFO}
+for model_name, model_data in ANTHROPIC_LLMS.items():
+    ALL_LLMS[model_name] = {**model_data, "provider": "anthropic", **ANTHROPIC_LLM_INFO}
+
+LLMsList = AnthropicLLMs | OpenaiLLMs
+TTSList = OpenaiTTS
