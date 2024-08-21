@@ -103,3 +103,70 @@ def prompt_claude(
         "input_tokens": message.usage.input_tokens,
         "output_tokens": message.usage.output_tokens,
     }
+
+
+def chat_with_claude(
+    messages=[],
+    model=DEFAULT_ANTHROPIC_MODEL,
+    system_prompt="You are a helpful assistant.",
+    max_tokens=1024,
+    temperature=1,
+):
+    """
+    Conversational interface with the Anthropic API.
+    Can optionally include a list of messages to start the conversation.
+    """
+    if not messages:
+        messages = [
+            {
+                "text": input("Start the conversation: ")
+            }
+        ]
+        print()
+    
+    else:
+        for m in messages:
+            if m['type'] == 'text':
+                print("User:", m['text'], '\n')
+            elif m['type'] == 'image':
+                print("User: [Image]", '\n')
+        
+    formatted_messages = format_claude_messages(messages)
+
+    while True:
+
+        with CLIENT.messages.stream(
+            model=model,
+            system=system_prompt,
+            messages=formatted_messages,
+            max_tokens=max_tokens,
+            temperature=temperature,
+        ) as stream:
+            print("Assistant: ", end='', flush=True)
+
+            full_response = ""
+            for text_chunk in stream.text_stream:
+                full_response += text_chunk
+                print(text_chunk, end="", flush=True)
+
+        formatted_messages.append({
+            "role": "assistant",
+            "content": [
+                {
+                    "type": "text",
+                    "text": full_response
+                }
+            ]
+        })
+        print('\n')
+
+        formatted_messages.append({
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": input("User: ")
+                }
+            ]
+        })
+        print()
