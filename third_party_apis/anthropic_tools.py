@@ -3,6 +3,7 @@ from typing import List
 
 import anthropic
 
+from third_party_apis.models import AnthropicLLMs
 from media_tools.utils import encode_image
 
 ANTHROPIC_API_KEY=os.environ.get('ANTHROPIC_API_KEY')
@@ -19,7 +20,10 @@ CLIENT = anthropic.Anthropic(
 )
 
 
-def format_claude_messages(messages: List[dict] = [], system_prompt=""):
+def format_claude_messages(
+    messages: List[dict] = [],
+    system_prompt="",
+):
     '''
     Format messages for submission to a Claude model.
 
@@ -68,12 +72,12 @@ def format_claude_messages(messages: List[dict] = [], system_prompt=""):
 
 
 def prompt_claude(
-        messages: List[dict],
-        model=DEFAULT_ANTHROPIC_LLM,
-        system_prompt="You are a helpful assistant.",
-        max_tokens=1000,
-        temperature=1,
-    ):
+    messages: List[dict],
+    model:AnthropicLLMs = DEFAULT_ANTHROPIC_LLM,
+    system_prompt="You are a helpful assistant.",
+    max_tokens=1000,
+    temperature=1,
+):
     """
     Get a response from a Claude LLM.
 
@@ -108,7 +112,7 @@ def prompt_claude(
 
 def stream_claude(
         formatted_messages: List[dict],
-        model=DEFAULT_ANTHROPIC_LLM,
+        model:AnthropicLLMs = DEFAULT_ANTHROPIC_LLM,
         system_prompt="You are a helpful assistant.",
         max_tokens=1024,
         temperature=1,

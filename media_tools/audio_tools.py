@@ -2,7 +2,7 @@ import os
 import subprocess
 from typing import BinaryIO
 
-from media_tools.models import TTSList
+from third_party_apis.models import TTSList
 
 
 def convert_to_mp3(filepath):

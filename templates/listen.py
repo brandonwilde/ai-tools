@@ -16,7 +16,7 @@ if str(root_path) not in sys.path:
 #--------------------------------------------------#
 
 from media_tools.audio_tools import convert_to_mp3, transcribe
-from media_tools.models import LLMsList
+from third_party_apis.models import LLMsList
 from media_tools.text_tools import translate
 
 

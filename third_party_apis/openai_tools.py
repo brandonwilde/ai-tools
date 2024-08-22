@@ -3,6 +3,7 @@ from typing import BinaryIO, List
 
 from openai import OpenAI
 
+from third_party_apis.models import OpenaiLLMs, OpenaiTTS
 from media_tools.utils import encode_image
 
 OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
@@ -18,7 +19,10 @@ CLIENT = OpenAI(
 )
 
 
-def format_openai_messages(messages: List[dict] = [], system_prompt=""):
+def format_openai_messages(
+    messages: List[dict] = [],
+    system_prompt="",
+):
     '''
     Format messages for submission to an OpenAI model.
 
@@ -72,7 +76,7 @@ def format_openai_messages(messages: List[dict] = [], system_prompt=""):
 
 def prompt_openai(
         messages: List[dict],
-        model=DEFAULT_OPENAI_LLM,
+        model:OpenaiLLMs = DEFAULT_OPENAI_LLM,
         system_prompt="You are a helpful assistant.",
         max_tokens=1000,
         temperature=1,
@@ -109,12 +113,12 @@ def prompt_openai(
 
 
 def stream_openai(
-        formatted_messages: List[dict],
-        model=DEFAULT_OPENAI_LLM,
-        system_prompt="",
-        max_tokens=1024,
-        temperature=1,
-    ):
+    formatted_messages: List[dict],
+    model:OpenaiLLMs = DEFAULT_OPENAI_LLM,
+    system_prompt="",
+    max_tokens=1024,
+    temperature=1,
+):
     """
     Stream a response from an OpenAI LLM.
     Prints the response as it is generated.
@@ -142,6 +146,7 @@ def stream_openai(
 
 def transcribe_via_openai(
     audio_file: BinaryIO,
+    model:OpenaiTTS = "whisper-1",
     verbose=True
 ):
     """

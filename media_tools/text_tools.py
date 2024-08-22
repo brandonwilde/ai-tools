@@ -1,6 +1,6 @@
 from typing import List
 
-from media_tools.models import ALL_LLMS, LLMsList
+from third_party_apis.models import ALL_LLMS, LLMsList
 from media_tools.utils import log_time
 
 DEFAULT_LLM = "gpt-4o-mini"
