@@ -143,4 +143,13 @@ def stream_claude(
         for text_chunk in stream.text_stream:
             print(text_chunk, end="", flush=True)
 
-    return stream.current_message_snapshot.content[0].text
+    response = {
+        'text': stream.current_message_snapshot.content[0].text,
+        'input_tokens': stream.current_message_snapshot.usage.input_tokens,
+        'output_tokens': stream.current_message_snapshot.usage.output_tokens,
+    }
+    if caching:
+        response['cache_write_tokens'] = stream.current_message_snapshot.usage.cache_creation_input_tokens
+        response['cache_read_tokens'] = stream.current_message_snapshot.usage.cache_read_input_tokens
+
+    return response

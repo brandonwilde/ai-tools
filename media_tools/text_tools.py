@@ -1,27 +1,39 @@
 from typing import List
 
+from tabulate import tabulate
+
 from third_party_apis.models import ALL_LLMS, LLMsList
 from media_tools.utils import log_time
 
 DEFAULT_LLM = "gpt-4o-mini"
 
 
-def log_token_usage(response, model):
+def log_token_usage(usage, model):
     '''
     Log the token usage and cost of a response from an LLM.
     '''
+
+    tok_in = usage['input_tokens']
+    tok_out = usage['output_tokens']
+    tok_cache_write = usage['cache_write_tokens'] if 'cache_write_tokens' in usage else 0
+    tok_cache_read = usage['cache_read_tokens'] if 'cache_read_tokens' in usage else 0
+
+    cost = tok_in * ALL_LLMS[model]['input_cost_per_M'] / 1000000 \
+        + tok_out * ALL_LLMS[model]['output_cost_per_M'] / 1000000 \
+        + tok_cache_write * (ALL_LLMS[model]['cache_write_cost_per_M'] / 1000000  if tok_cache_write else 0) \
+        + tok_cache_read * (ALL_LLMS[model]['cache_read_cost_per_M'] / 1000000 if tok_cache_read else 0)
     
-    tok_in = response['input_tokens']
-    tok_out = response['output_tokens']
-    cost = tok_in * ALL_LLMS[model]['input_cost_per_M'] / 1000000 + \
-        tok_out * ALL_LLMS[model]['output_cost_per_M'] / 1000000
-    
-    print(f"Prompt Tokens:   {tok_in:>7}")
-    print(f"Response Tokens: {tok_out:>7}")
-    print(f"Cost:           ${cost:.5f}")
+    data = [
+        ["Prompt Tokens", tok_in],
+        ["Cache Write Tokens", tok_cache_write],
+        ["Cache Read Tokens", tok_cache_read],
+        ["Response Tokens", tok_out],
+        ["Cost", f"${cost:.5f}"],
+    ]
+
+    print(tabulate(data, colalign=("left", "right")))
 
     return
-
 
 @log_time
 def prompt_llm(
@@ -122,45 +134,60 @@ def chat_with_llm(
 
     formatted_messages = _format_messages(messages, system_prompt, cache_messages=cache)
 
+    usage = {}
     while True:
-        print("Assistant: ", end='', flush=True)
-        response = _stream_llm(
-            formatted_messages=formatted_messages,
-            model=model,
-            system_prompt=system_prompt,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            caching=cache
-        )
-        print('\n')
+        try:
+            print("Assistant: ", end='', flush=True)
+            response = _stream_llm(
+                formatted_messages=formatted_messages,
+                model=model,
+                system_prompt=system_prompt,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                caching=cache
+            )
+            print('\n')
 
-        if cache and len(formatted_messages) >= 3:
-            # remove previous cache control - only use for the two most recent messages
-            del formatted_messages[-3]['content'][-1]['cache_control']
+            # Update usage
+            for key in response:
+                if 'token' in key:
+                    usage[key] = usage.get(key, 0) + response[key]
+                    
+            if cache and len(formatted_messages) >= 3:
+                # remove previous cache control - only use for the two most recent messages
+                del formatted_messages[-3]['content'][-1]['cache_control']
 
-        formatted_messages.append({
-            "role": "assistant",
-            "content": [
-                {
-                    "type": "text",
-                    "text": response
-                }
-            ]
-        })
-        
-        message_content = {
-            "type": "text",
-            "text": input("User: "),
-        }
-        if cache:
-            message_content["cache_control"] = {"type": "ephemeral"}
+            formatted_messages.append({
+                "role": "assistant",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": response['text']
+                    }
+                ]
+            })
+            
+            # Add user response
+            message_content = {
+                "type": "text",
+                "text": input("User: "),
+            }
+            if cache:
+                message_content["cache_control"] = {"type": "ephemeral"}
 
-        formatted_messages.append({
-            "role": "user",
-            "content": [message_content]
-        })
+            formatted_messages.append({
+                "role": "user",
+                "content": [message_content]
+            })
 
-        print()
+            print()
+
+        except KeyboardInterrupt:
+            print("\nEnding conversation.")
+            break
+
+    print()
+    log_token_usage(usage, model)
 
 
 def translate(

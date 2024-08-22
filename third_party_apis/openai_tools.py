@@ -134,18 +134,26 @@ def stream_openai(
         model=model,
         messages=formatted_messages,
         stream=True,
+        stream_options={'include_usage': True},
         max_tokens=max_tokens,
         temperature=temperature,
     )
 
     collected_messages = []
     for chunk in chat_response:
-        chunk_message = chunk.choices[0].delta.content
-        if chunk_message is not None:
-            collected_messages.append(chunk_message)
-            print(chunk.choices[0].delta.content, end='')
+        if chunk.choices:
+            chunk_message = chunk.choices[0].delta.content
+            if chunk_message is not None:
+                collected_messages.append(chunk_message)
+                print(chunk.choices[0].delta.content, end='')
 
-    return ''.join(collected_messages)
+    response = {
+        'text': ''.join(collected_messages),
+        'input_tokens': chunk.usage.prompt_tokens,
+        'output_tokens': chunk.usage.completion_tokens,
+    }
+    
+    return response
 
 
 def transcribe_via_openai(

@@ -38,12 +38,16 @@ ANTHROPIC_LLMS = {
         "input_limit": 200000,
         "output_limit": 8192,
         "input_cost_per_M": 3,
+        "cache_write_cost_per_M": 3.75,
+        "cache_read_cost_per_M": 0.3,
         "output_cost_per_M": 15,
     },
     "claude-3-haiku-20240307": {
         "input_limit": 200000,
         "output_limit": 4096,
         "input_cost_per_M": 0.25,
+        "cache_write_cost_per_M": 0.3,
+        "cache_read_cost_per_M": 0.03,
         "output_cost_per_M": 1.25,
     },
 }
