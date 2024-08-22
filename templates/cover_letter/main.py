@@ -24,6 +24,8 @@ args = {
     "job_description": "", # Reads from file if empty
     "previous_cover_letters": "", # Reads from file if empty
     "resume": "", # Reads from file if empty
+    "llm": "claude-3-haiku-20240307",
+    # "llm": "gpt-4o-mini",
 }
 
 
@@ -89,10 +91,17 @@ prompt = prompt_template.format(
 
 response = prompt_llm(
     messages=[{"text": prompt}],
-    model="claude-3-haiku-20240307",
+    model=args["llm"],
     max_tokens=4096
 )
 
-output_file = parent_dir / f"cover_letter_{filenamify(args['company_name'])}.xml"
+if "haiku" in args["llm"]:
+    tag = "haiku"
+elif "4o-mini" in args["llm"]:
+    tag = "mini"
+else:
+    tag = ""
+
+output_file = parent_dir / f"cover_letter_{filenamify(args['company_name'])}_{tag}.xml"
 with open(output_file, "w") as f:
     f.write(response)
