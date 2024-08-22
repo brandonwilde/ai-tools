@@ -22,6 +22,7 @@ CLIENT = OpenAI(
 def format_openai_messages(
     messages: List[dict] = [],
     system_prompt="",
+    cache_messages=False,
 ):
     '''
     Format messages for submission to an OpenAI model.
@@ -31,6 +32,8 @@ def format_openai_messages(
         - text (str): A text message.
         - code (str): A code snippet.
         - image (str): The path to an image.
+    - system_prompt (str): The system prompt to use.
+    - cache_messages (bool): Not used here but included for consistency with Anthropic format function.
     '''
 
     user_content = []
@@ -118,12 +121,13 @@ def stream_openai(
     system_prompt="",
     max_tokens=1024,
     temperature=1,
+    caching=False,
 ):
     """
     Stream a response from an OpenAI LLM.
     Prints the response as it is generated.
 
-    *System prompt not used here, but included for consistency with Anthropic stream function.
+    *System prompt and caching not used here, but included for consistency with Anthropic stream function.
     """
 
     chat_response = CLIENT.chat.completions.create(

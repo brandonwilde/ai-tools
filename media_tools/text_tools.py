@@ -81,9 +81,10 @@ def chat_with_llm(
     system_prompt="You are a helpful assistant.",
     max_tokens=1024,
     temperature=1,
+    cache=False,
 ):
     """
-    Conversational interface with the OpenAI API.
+    Conversational interface with an LLM.
     Can optionally include a list of messages to start the conversation.
     """
 
@@ -100,6 +101,9 @@ def chat_with_llm(
         )
     else:
         raise ValueError(f"Provider '{model_info['provider']}' is not yet supported. Add chat function for this provider.")
+    
+    if cache and model_info['provider'] != "anthropic":
+        raise ValueError(f"Prompt caching is not yet supported for provider '{model_info['provider']}'.")
 
     if not messages:
         messages = [
@@ -111,12 +115,12 @@ def chat_with_llm(
 
     else:
         for m in messages:
-            if m['type'] == 'text':
+            if 'text' in m:
                 print("User:", m['text'], '\n')
-            elif 'image' in m['type']:
+            elif 'image' in m:
                 print("User: [Image]", '\n')
 
-    formatted_messages = _format_messages(messages, system_prompt)
+    formatted_messages = _format_messages(messages, system_prompt, cache_messages=cache)
 
     while True:
         print("Assistant: ", end='', flush=True)
@@ -126,8 +130,13 @@ def chat_with_llm(
             system_prompt=system_prompt,
             max_tokens=max_tokens,
             temperature=temperature,
+            caching=cache
         )
         print('\n')
+
+        if cache and len(formatted_messages) >= 3:
+            # remove previous cache control - only use for the two most recent messages
+            del formatted_messages[-3]['content'][-1]['cache_control']
 
         formatted_messages.append({
             "role": "assistant",
@@ -139,15 +148,18 @@ def chat_with_llm(
             ]
         })
         
+        message_content = {
+            "type": "text",
+            "text": input("User: "),
+        }
+        if cache:
+            message_content["cache_control"] = {"type": "ephemeral"}
+
         formatted_messages.append({
             "role": "user",
-            "content": [
-                {
-                    "type": "text",
-                    "text": input("User: ")
-                }
-            ]
+            "content": [message_content]
         })
+
         print()
 
 

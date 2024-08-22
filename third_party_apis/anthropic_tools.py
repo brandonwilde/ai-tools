@@ -23,6 +23,7 @@ CLIENT = anthropic.Anthropic(
 def format_claude_messages(
     messages: List[dict] = [],
     system_prompt="",
+    cache_messages=False,
 ):
     '''
     Format messages for submission to a Claude model.
@@ -33,6 +34,7 @@ def format_claude_messages(
         - code (str): A code snippet.
         - image (str): The path to an image.
     - system_prompt (str): Not used here but included for consistency with OpenAI format function.
+    - cache_messages (bool): Whether to cache the conversation.
     '''
 
     user_content = []
@@ -62,6 +64,9 @@ def format_claude_messages(
                     "data": base64_image,
                 }
             })
+
+    if cache_messages:
+        user_content[-1]["cache_control"] = {"type": "ephemeral"}
 
     formatted_messages = [{
         "role": "user",
@@ -116,22 +121,26 @@ def stream_claude(
         system_prompt="You are a helpful assistant.",
         max_tokens=1024,
         temperature=1,
+        caching=False,
     ):
     """
     Stream a response from an Anthropic LLM.
     Prints the response as it is generated.
     """
 
-    with CLIENT.messages.stream(
+    if caching:
+        client_stream = CLIENT.beta.prompt_caching.messages.stream
+    else:
+        client_stream = CLIENT.messages.stream
+
+    with client_stream(
         model=model,
         system=system_prompt,
         messages=formatted_messages,
         max_tokens=max_tokens,
         temperature=temperature,
     ) as stream:
-        full_response = ""
         for text_chunk in stream.text_stream:
-            full_response += text_chunk
             print(text_chunk, end="", flush=True)
 
-    return full_response
+    return stream.current_message_snapshot.content[0].text
