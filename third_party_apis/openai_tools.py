@@ -1,5 +1,5 @@
 import os
-from typing import BinaryIO, List
+from typing import BinaryIO, List, Literal
 
 from openai import OpenAI
 
@@ -21,7 +21,7 @@ CLIENT = OpenAI(
 
 def format_openai_messages(
     messages: List[dict] = [],
-    system_prompt="",
+    role:Literal["system","user","assistant"] = "user",
     cache_messages=False,
 ):
     '''
@@ -32,13 +32,15 @@ def format_openai_messages(
         - text (str): A text message.
         - code (str): A code snippet.
         - image (str): The path to an image.
-    - system_prompt (str): The system prompt to use.
+    - role (str): The role (system, user, assistant) of the message sender.
     - cache_messages (bool): Not used here but included for consistency with Anthropic format function.
     '''
 
     user_content = []
 
     for message in messages:
+        if type(message) is str:
+            message = {"text": message}
         if 'text' in message:
             user_content.append({
                 "type": "text",
@@ -57,24 +59,29 @@ def format_openai_messages(
                     "url": f"data:image/jpeg;base64,{base64_image}"
                 }
             })
-            
-    formatted_system_prompt = [{
-        "role": "system",
-        "content": [
-            {
-                "type": "text",
-                "text": system_prompt,
-            }
-        ]
-    }]
-
-    if user_content:
-        return formatted_system_prompt + [{
+    
+    if role == "system":
+        formatted_messages = [{
+            "role": "system",
+            "content": [
+                {
+                    "type": "text",
+                    "text": user_content,
+                }
+            ]
+        }]
+    elif role == "user":
+        formatted_messages = [{
             "role": "user",
             "content": user_content
         }]
+    elif role == "assistant":
+        formatted_messages = [{
+            "role": "assistant",
+            "content": user_content
+        }]
 
-    return formatted_system_prompt
+    return formatted_messages
 
 
 def prompt_openai(
@@ -99,11 +106,13 @@ def prompt_openai(
     - str: The response from the LLM.
     """
 
-    formatted_messages = format_openai_messages(messages, system_prompt)
+    formatted_system_prompt = format_openai_messages(system_prompt, role="system")
+    formatted_messages = format_openai_messages(messages)
+    system_and_messages = formatted_system_prompt + formatted_messages
 
     chat_response = CLIENT.chat.completions.create(
         model=model,
-        messages=formatted_messages,
+        messages=system_and_messages,
         max_tokens=max_tokens,
         temperature=temperature,
     )
@@ -118,7 +127,7 @@ def prompt_openai(
 def stream_openai(
     formatted_messages: List[dict],
     model:OpenaiLLMs = DEFAULT_OPENAI_LLM,
-    system_prompt="",
+    formatted_system_prompt:List[dict] = [],
     max_tokens=1024,
     temperature=1,
     caching=False,
@@ -127,12 +136,12 @@ def stream_openai(
     Stream a response from an OpenAI LLM.
     Prints the response as it is generated.
 
-    *System prompt and caching not used here, but included for consistency with Anthropic stream function.
+    *Caching not used here, but included for consistency with Anthropic stream function.
     """
 
     chat_response = CLIENT.chat.completions.create(
         model=model,
-        messages=formatted_messages,
+        messages=formatted_system_prompt+formatted_messages,
         stream=True,
         stream_options={'include_usage': True},
         max_tokens=max_tokens,

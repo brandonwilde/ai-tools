@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Literal
 
 import anthropic
 
@@ -22,7 +22,7 @@ CLIENT = anthropic.Anthropic(
 
 def format_claude_messages(
     messages: List[dict] = [],
-    system_prompt="",
+    role:Literal["system","user","assistant"] = "user",
     cache_messages=False,
 ):
     '''
@@ -33,19 +33,22 @@ def format_claude_messages(
         - text (str): A text message.
         - code (str): A code snippet.
         - image (str): The path to an image.
+        If "cache" is also included in a message, a cache_control will be added after the message.
     - system_prompt (str): Not used here but included for consistency with OpenAI format function.
-    - cache_messages (bool): Whether to cache the conversation.
+    - cache_messages (bool): Whether to cache the conversation. Will add cache_control after the last message.
     '''
 
-    user_content = []
+    content = []
     for message in messages:
+        if type(message) is str:
+            message = {"text": message}
         if 'text' in message:
-            user_content.append({
+            content.append({
                 "type": "text",
                 "text": message['text']
             })
         elif 'code' in message:
-            user_content.append({
+            content.append({
                 "type": "text",
                 "text": f"```\n{message['code']}\n```"
             })
@@ -56,7 +59,7 @@ def format_claude_messages(
             if ext == "jpg":
                 ext = "jpeg"
             base64_image = encode_image(message['image'])
-            user_content.append({
+            content.append({
                 "type": "image",
                 "source": {
                     "type": "base64",
@@ -64,14 +67,24 @@ def format_claude_messages(
                     "data": base64_image,
                 }
             })
+        if "cache" in message:
+            content[-1]["cache_control"] = {"type": "ephemeral"}
 
     if cache_messages:
-        user_content[-1]["cache_control"] = {"type": "ephemeral"}
+        content[-1]["cache_control"] = {"type": "ephemeral"}
 
-    formatted_messages = [{
-        "role": "user",
-        "content": user_content
-    }]
+    if role == "system":
+        formatted_messages = content
+    elif role == "user":
+        formatted_messages = [{
+            "role": "user",
+            "content": content
+        }]
+    elif role == "assistant":
+        formatted_messages = [{
+            "role": "assistant",
+            "content": content
+        }]
 
     return formatted_messages
 
@@ -98,11 +111,12 @@ def prompt_claude(
     - str: The response from the LLM.
     """
 
+    formatted_system_prompt = format_claude_messages([system_prompt], role="system")
     formatted_messages = format_claude_messages(messages)
 
     message = CLIENT.messages.create(
         model=model,
-        system=system_prompt,
+        system=formatted_system_prompt,
         messages=formatted_messages,
         max_tokens=max_tokens,
         temperature=temperature,
@@ -118,7 +132,7 @@ def prompt_claude(
 def stream_claude(
         formatted_messages: List[dict],
         model:AnthropicLLMs = DEFAULT_ANTHROPIC_LLM,
-        system_prompt="You are a helpful assistant.",
+        formatted_system_prompt:List[dict] = [{'text': "You are a helpful assistant."}],
         max_tokens=1024,
         temperature=1,
         caching=False,
@@ -135,7 +149,7 @@ def stream_claude(
 
     with client_stream(
         model=model,
-        system=system_prompt,
+        system=formatted_system_prompt,
         messages=formatted_messages,
         max_tokens=max_tokens,
         temperature=temperature,

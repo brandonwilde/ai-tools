@@ -132,7 +132,8 @@ def chat_with_llm(
             elif 'image' in m:
                 print("User: [Image]", '\n')
 
-    formatted_messages = _format_messages(messages, system_prompt, cache_messages=cache)
+    formatted_system_prompt = _format_messages(system_prompt, role="system", cache_messages=cache)
+    formatted_messages = _format_messages(messages, cache_messages=cache)
 
     usage = {}
     while True:
@@ -141,7 +142,7 @@ def chat_with_llm(
             response = _stream_llm(
                 formatted_messages=formatted_messages,
                 model=model,
-                system_prompt=system_prompt,
+                formatted_system_prompt=formatted_system_prompt,
                 max_tokens=max_tokens,
                 temperature=temperature,
                 caching=cache
@@ -188,6 +189,8 @@ def chat_with_llm(
 
     print()
     log_token_usage(usage, model)
+
+    return
 
 
 def translate(

@@ -40,7 +40,7 @@ for arg in ["job_description", "previous_cover_letters", "resume"]:
             raise Exception(f"Please provide the {arg.replace('_',' ')} in a file named '{arg}.txt'.")
 
 
-prompt_template = """
+prompt_template_1 = """
 You are an AI assistant tasked with helping me create a great cover letter for a competitive job application. We'll do this together, but you'll take the lead. Please read the instructions carefully, and then we'll get started.
 
 1. **REVIEW** - First, review the following information:
@@ -54,7 +54,9 @@ You are an AI assistant tasked with helping me create a great cover letter for a
 <resume>
 {RESUME}
 </resume>
+"""
 
+prompt_template_2 = """
 2. **SELECT** - Select the cover letter from the previous cover letters that best represents me for the new position. Print this letter verbatim within <selected_letter> tags.
 
 3. **UPDATE** - Make minimal updates to the selected letter so that it no longer references the original position and company, but instead refers to the new company and position. Use the following information:
@@ -76,22 +78,28 @@ Provide your answers within <analysis> tags.
 
 7. **BRIEF** - List the specific changes you made to the letter within <changes_made> tags.
 
-Remember to think carefully about each step before providing your response. Use <scratchpad> tags prior to each step to remind yourself of what is required for that step and work through your thought process before giving your final answer for the step. You can also ask me questions at any time if you need help or clarification, or more information to fill in data gaps.
+Remember to think carefully about each step before providing your response. Please also walk me through your thought process and confirm your plans with me before taking any step, and check your results with me after each step. You can also ask me for clarification or more information to fill in data gaps.
 
-Okay, let's get started with the first step!
+Please only take one step at a time; I want this to be a collaborative collaboration. Let's begin with the first step.
 """
 
 
-prompt = prompt_template.format(
-    COMPANY_NAME=args["company_name"],
-    JOB_TITLE=args["job_title"],
+prompt1 = prompt_template_1.format(
+    # COMPANY_NAME=args["company_name"],
+    # JOB_TITLE=args["job_title"],
     JOB_DESCRIPTION=args["job_description"],
     PREVIOUS_COVER_LETTERS=args["previous_cover_letters"],
     RESUME=args["resume"],
 )
 
+prompt2 = prompt_template_2.format(
+    COMPANY_NAME=args["company_name"],
+    JOB_TITLE=args["job_title"],
+)
+
 response = chat_with_llm(
-    messages=[{"text": prompt}],
+    system_prompt=[{"text": "You are a helpful assistant.", "cache": True}],
+    messages=[{"text": prompt1, "cache": True}, {"text": prompt2}],
     model=args["llm"],
     max_tokens=4096,
     cache=True,
