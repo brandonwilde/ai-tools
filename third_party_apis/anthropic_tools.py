@@ -1,5 +1,5 @@
 import os
-from typing import List, Literal
+from typing import List, Literal, Union
 
 import anthropic
 
@@ -21,7 +21,7 @@ CLIENT = anthropic.Anthropic(
 
 
 def format_claude_messages(
-    messages: List[dict] = [],
+    messages: List[Union[str,dict]] = [],
     role:Literal["system","user","assistant"] = "user",
     cache_messages=False,
 ):
@@ -90,9 +90,9 @@ def format_claude_messages(
 
 
 def prompt_claude(
-    messages: List[dict],
+    messages: List[Union[str,dict]],
     model:AnthropicLLMs = DEFAULT_ANTHROPIC_LLM,
-    system_prompt="You are a helpful assistant.",
+    system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
     max_tokens=1000,
     temperature=1,
 ):
@@ -110,8 +110,9 @@ def prompt_claude(
     Returns:
     - str: The response from the LLM.
     """
-
-    formatted_system_prompt = format_claude_messages([system_prompt], role="system")
+    if isinstance(system_prompt, str):
+        system_prompt = [system_prompt]
+    formatted_system_prompt = format_claude_messages(system_prompt, role="system")
     formatted_messages = format_claude_messages(messages)
 
     message = CLIENT.messages.create(
@@ -130,13 +131,13 @@ def prompt_claude(
 
 
 def stream_claude(
-        formatted_messages: List[dict],
-        model:AnthropicLLMs = DEFAULT_ANTHROPIC_LLM,
-        formatted_system_prompt:List[dict] = [{'text': "You are a helpful assistant."}],
-        max_tokens=1024,
-        temperature=1,
-        caching=False,
-    ):
+    formatted_messages: List[dict],
+    model:AnthropicLLMs = DEFAULT_ANTHROPIC_LLM,
+    formatted_system_prompt:List[dict] = [{'text': "You are a helpful assistant."}],
+    max_tokens=1024,
+    temperature=1,
+    caching=False,
+):
     """
     Stream a response from an Anthropic LLM.
     Prints the response as it is generated.

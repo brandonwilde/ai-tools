@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 from tabulate import tabulate
 
@@ -37,9 +37,9 @@ def log_token_usage(usage, model):
 
 @log_time
 def prompt_llm(
-    messages: List[dict],
+    messages: List[Union[str,dict]],
     model:LLMsList = DEFAULT_LLM,
-    system_prompt="You are a helpful assistant.",
+    system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
     max_tokens=1000,
     temperature=1,
 ):
@@ -74,6 +74,8 @@ def prompt_llm(
     else:
         raise ValueError(f"Provider '{provider}' is not yet supported. Add basic prompting function for this provider.")
 
+    print(f'Calling LLM "{model}"...\n')
+
     response = _prompt_model(
         messages=messages,
         model=model,
@@ -88,9 +90,9 @@ def prompt_llm(
 
 
 def chat_with_llm(
-    messages:List[dict] = [],
+    messages:List[Union[str,dict]] = [],
     model:LLMsList = DEFAULT_LLM,
-    system_prompt="You are a helpful assistant.",
+    system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
     max_tokens=1024,
     temperature=1,
     cache=False,
@@ -115,7 +117,10 @@ def chat_with_llm(
         raise ValueError(f"Provider '{model_info['provider']}' is not yet supported. Add chat function for this provider.")
     
     if cache and model_info['provider'] != "anthropic":
-        raise ValueError(f"Prompt caching is not yet supported for provider '{model_info['provider']}'.")
+        print(f"\n!!WARNING: Prompt caching is not yet supported for provider '{model_info['provider']}'. Disabling cache.\n")
+        cache = False
+
+    print(f'Calling LLM "{model}"...\n')
 
     if not messages:
         messages = [
@@ -132,6 +137,8 @@ def chat_with_llm(
             elif 'image' in m:
                 print("User: [Image]", '\n')
 
+    if isinstance(system_prompt, str):
+        system_prompt = [system_prompt]
     formatted_system_prompt = _format_messages(system_prompt, role="system", cache_messages=cache)
     formatted_messages = _format_messages(messages, cache_messages=cache)
 

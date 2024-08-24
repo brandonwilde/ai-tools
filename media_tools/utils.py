@@ -12,15 +12,6 @@ def log_time(func):
     '''
     @wraps(func)
     def wrapper(*args, **kwargs):
-        # Get the function's signature
-        sig = inspect.signature(func)
-        bound_args = sig.bind_partial(*args, **kwargs)
-        bound_args.apply_defaults()
-
-        # Extract the model argument
-        model = bound_args.arguments.get('model', None)
-
-        print(f'Calling LLM "{model}"...')
 
         start = time.time()
         result = func(*args, **kwargs)

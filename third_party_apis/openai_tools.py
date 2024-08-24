@@ -1,5 +1,5 @@
 import os
-from typing import BinaryIO, List, Literal
+from typing import BinaryIO, List, Literal, Union
 
 from openai import OpenAI
 
@@ -20,7 +20,7 @@ CLIENT = OpenAI(
 
 
 def format_openai_messages(
-    messages: List[dict] = [],
+    messages: List[Union[str,dict]] = [],
     role:Literal["system","user","assistant"] = "user",
     cache_messages=False,
 ):
@@ -36,24 +36,24 @@ def format_openai_messages(
     - cache_messages (bool): Not used here but included for consistency with Anthropic format function.
     '''
 
-    user_content = []
+    content = []
 
     for message in messages:
         if type(message) is str:
             message = {"text": message}
         if 'text' in message:
-            user_content.append({
+            content.append({
                 "type": "text",
                 "text": message['text']
             })
         elif 'code' in message:
-            user_content.append({
+            content.append({
                 "type": "text",
                 "text": f"```html\n{message['code']}\n```"
             })
         elif 'image' in message:
             base64_image = encode_image(message['image'])
-            user_content.append({
+            content.append({
                 "type": "image_url",
                 "image_url": {
                     "url": f"data:image/jpeg;base64,{base64_image}"
@@ -63,34 +63,29 @@ def format_openai_messages(
     if role == "system":
         formatted_messages = [{
             "role": "system",
-            "content": [
-                {
-                    "type": "text",
-                    "text": user_content,
-                }
-            ]
+            "content": content
         }]
     elif role == "user":
         formatted_messages = [{
             "role": "user",
-            "content": user_content
+            "content": content
         }]
     elif role == "assistant":
         formatted_messages = [{
             "role": "assistant",
-            "content": user_content
+            "content": content
         }]
 
     return formatted_messages
 
 
 def prompt_openai(
-        messages: List[dict],
-        model:OpenaiLLMs = DEFAULT_OPENAI_LLM,
-        system_prompt="You are a helpful assistant.",
-        max_tokens=1000,
-        temperature=1,
-    ):
+    messages: List[Union[str,dict]],
+    model:OpenaiLLMs = DEFAULT_OPENAI_LLM,
+    system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
+    max_tokens=1000,
+    temperature=1,
+):
     """
     Get a response from an OpenAI LLM.
 
@@ -127,7 +122,7 @@ def prompt_openai(
 def stream_openai(
     formatted_messages: List[dict],
     model:OpenaiLLMs = DEFAULT_OPENAI_LLM,
-    formatted_system_prompt:List[dict] = [],
+    formatted_system_prompt:List[dict] = [{'text': "You are a helpful assistant."}],
     max_tokens=1024,
     temperature=1,
     caching=False,

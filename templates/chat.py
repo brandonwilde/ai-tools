@@ -16,11 +16,11 @@ if str(root_path) not in sys.path:
 #--------------------------------------------------#
 
 
-from media_tools.text_tools import chat_with_openai
+from media_tools.text_tools import chat_with_llm
 
 
 messages = [
     {"text": "When was the first time you heard about the concept of a chatbot?"}
 ]
 
-chat_with_openai(messages)
+chat_with_llm(messages, model="claude-3-haiku-20240307", cache=True)
