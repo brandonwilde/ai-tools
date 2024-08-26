@@ -93,13 +93,16 @@ def chat_with_llm(
     messages:List[Union[str,dict]] = [],
     model:LLMsList = DEFAULT_LLM,
     system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
+    prefill_response="",
     max_tokens=1024,
     temperature=1,
-    cache=False,
+    cache=True,
 ):
     """
     Conversational interface with an LLM.
     Can optionally include a list of messages to start the conversation.
+    Specify prefill_response to provide the first words of the assistant's responses.
+    Set cache to True to cache messages throughout the conversation. Generally a good idea for long conversations.
     """
 
     model_info = ALL_LLMS[model]
@@ -141,11 +144,21 @@ def chat_with_llm(
         system_prompt = [system_prompt]
     formatted_system_prompt = _format_messages(system_prompt, role="system", cache_messages=cache)
     formatted_messages = _format_messages(messages, cache_messages=cache)
-
+    
     usage = {}
     while True:
         try:
             print("Assistant: ", end='', flush=True)
+            formatted_messages.append({
+                "role": "assistant",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": prefill_response,
+                    }
+                ]
+            })
+
             response = _stream_llm(
                 formatted_messages=formatted_messages,
                 model=model,
@@ -161,20 +174,26 @@ def chat_with_llm(
                 if 'token' in key:
                     usage[key] = usage.get(key, 0) + response[key]
                     
-            if cache and len(formatted_messages) >= 3:
-                # remove previous cache control - only use for the two most recent messages
-                del formatted_messages[-3]['content'][-1]['cache_control']
-
-            formatted_messages.append({
-                "role": "assistant",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": response['text']
-                    }
-                ]
-            })
+            if prefill_response:
+                if cache and len(formatted_messages) >= 4:
+                    # remove previous cache control - only use for the two most recent user messages
+                    del formatted_messages[-4]['content'][-1]['cache_control']
+                formatted_messages[-1]['content'][-1]['text'] += response['text']
             
+            else:
+                if cache and len(formatted_messages) >= 3:
+                    # remove previous cache control - only use for the two most recent user messages
+                    del formatted_messages[-3]['content'][-1]['cache_control']
+                formatted_messages.append({
+                    "role": "assistant",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": response['text']
+                        }
+                    ]
+                })
+
             # Add user response
             message_content = {
                 "type": "text",
