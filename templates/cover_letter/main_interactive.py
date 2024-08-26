@@ -40,12 +40,18 @@ for arg in ["job_description", "previous_cover_letters", "resume"]:
             raise Exception(f"Please provide the {arg.replace('_',' ')} in a file named '{arg}.txt'.")
 
 
-prompt_template_1 = """
-You are an AI assistant tasked with helping me create a great cover letter for a competitive job application. We'll do this together, but you'll take the lead. Please read the instructions carefully, and then we'll get started.
+system_prompt_1_template = """
+You are an intelligent, nuanced AI assistant helping to create a great cover letter for a competitive job application. You take the lead, but actively collaborate with the user (the candidate) during each step of the process.
 
-1. **REVIEW** - First, review the following information:
+The user has provided you the following information:
 
-<job_description>{JOB_DESCRIPTION}</job_description>
+<company_name>{COMPANY_NAME}</company_name>
+
+<job_title>{JOB_TITLE}</job_title>
+
+<job_description>
+{JOB_DESCRIPTION}
+</job_description>
 
 <previous_cover_letters>
 {PREVIOUS_COVER_LETTERS}
@@ -56,50 +62,39 @@ You are an AI assistant tasked with helping me create a great cover letter for a
 </resume>
 """
 
-prompt_template_2 = """
-2. **SELECT** - Select the cover letter from the previous cover letters that best represents me for the new position. Print this letter verbatim within <selected_letter> tags.
+system_prompt_2 = """
+These are the steps you take in your process of creating the cover letter.
 
-3. **UPDATE** - Make minimal updates to the selected letter so that it no longer references the original position and company, but instead refers to the new company and position. Use the following information:
+1. **SELECT TEMPLATE** - First, review the provided information (job description, previous cover letters, and resume) to understand the context of the new position, the user's background, and the user's writing style. Select a previous cover letter that best represents me for the new position, and can be used a starting point for the new cover letter. Once you have selected it, you make sure to convey this to the user by printing the letter verbatim within <selected_letter> tags.
 
-New Company: {COMPANY_NAME}
-New Position: {JOB_TITLE}
+2. **UPDATE** - Make minimal updates to the selected letter so that it no longer references the original position and company, but instead refers to the new company and job title. Once you have revised it, you send it to the user within <revised_letter> tags.
 
-Print the revised letter within <revised_letter> tags.
-
-4. **ANALYZE** - Answer the following questions:
+3. **ANALYZE** - Compare the job description with the revised letter to identify any incongruities in the information provided. You will then analyze the revised letter to determine:
    a) Which information in the letter is irrelevant to the new position?
    b) What information is missing from the letter that would make it more suitable for the new position?
+Convey your findings to the user and make sure to clearly demarcate the results of each analysis. Place the letter's irrelevant information within <irrelevant_info> tags and place letter's identified data gaps within <data_gaps> tags.
 
-Provide your answers within <analysis> tags.
+4. **RESEARCH** - Identify statements and claims from *the previous cover letters* AND *the provided resume* that could be used to fill in the letter's current data gaps. Make sure to pull this information from the previous cover letters and *NOT* from the job description. Describe your findings to the user in detail, listing the identified facts within <relevant_facts> tags, also including the specific source document of each fact.
 
-5. **RESEARCH** - Identify statements and claims from *the previous cover letters* AND *the provided resume* that could be used to fill in the letter's current data gaps. Make sure to pull this information from the previous cover letters and *NOT* from the job description. List these facts within <relevant_facts> tags, also including the specific source document of each fact.
+5. **FINALIZE** - Make adjustments to the letter by removing irrelevant information and adding the relevant facts found in the previous letters. Be discrete and tasteful, refraining from unnecessary phrases like \"this experience matches your requirements\". Print the final version of the letter within <final_letter> tags.
 
-6. **FINALIZE** - Make adjustments to the letter by removing irrelevant information and adding relevant information found in the previous letters. Be discrete and tasteful, refraining from unnecessary phrases like \"this experience matches your requirements\". Print the final version of the letter within <final_letter> tags.
+6. **BRIEF** - Brief the user on the specific changes you made to the letter within <changes_made> tags.
 
-7. **BRIEF** - List the specific changes you made to the letter within <changes_made> tags.
-
-Remember to think carefully about each step before providing your response. Please also walk me through your thought process and confirm your plans with me before taking any step, and check your results with me after each step. You can also ask me for clarification or more information to fill in data gaps.
-
-Please only take one step at a time; I want this to be a collaborative collaboration. Let's begin with the first step.
+!IMPORTANT: **The above instructions should guide your general process, but you won't be able to follow all of them at once. Please take one step at a time, maintaining a dialog with the user at each step. Walk the user through your thought process, confirming your plans with with the user before taking any step, and checking your results with the user after each step. Ask the user for clarification or additional information to fill in identified data gaps.**
 """
 
 
-prompt1 = prompt_template_1.format(
-    # COMPANY_NAME=args["company_name"],
-    # JOB_TITLE=args["job_title"],
+system_prompt_1 = system_prompt_1_template.format(
+    COMPANY_NAME=args["company_name"],
+    JOB_TITLE=args["job_title"],
     JOB_DESCRIPTION=args["job_description"],
     PREVIOUS_COVER_LETTERS=args["previous_cover_letters"],
     RESUME=args["resume"],
 )
 
-prompt2 = prompt_template_2.format(
-    COMPANY_NAME=args["company_name"],
-    JOB_TITLE=args["job_title"],
-)
-
-response = chat_with_llm(
-    system_prompt=[{"text": "You are a helpful assistant.", "cache": True}],
-    messages=[{"text": prompt1, "cache": True}, {"text": prompt2}],
+chat_with_llm(
+    system_prompt=[{"text": system_prompt_1, "cache": True}, {"text": system_prompt_2, "cache": True}],
+    # messages=[{"text": prompt1, "cache": True}, {"text": prompt2}],
     model=args["llm"],
     max_tokens=4096,
     cache=True,
@@ -112,6 +107,6 @@ elif "4o-mini" in args["llm"]:
 else:
     tag = ""
 
-output_file = parent_dir / f"cover_letter_{filenamify(args['company_name'])}_{tag}.xml"
-with open(output_file, "w") as f:
-    f.write(response)
+# output_file = parent_dir / f"cover_letter_{filenamify(args['company_name'])}_{tag}.xml"
+# with open(output_file, "w") as f:
+#     f.write(response)
