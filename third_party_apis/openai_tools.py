@@ -3,12 +3,13 @@ from typing import BinaryIO, List, Literal, Union
 
 from openai import OpenAI
 
-from third_party_apis.models import OpenaiLLMs, OpenaiTTS
+from third_party_apis.models import OpenaiLLMs, OpenaiSpeechRec
 from media_tools.utils import encode_image
 
 OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
 OPENAI_ORGANIZATION=os.environ.get('OPENAI_ORGANIZATION')
 DEFAULT_OPENAI_LLM = "gpt-4o-mini"
+DEFAULT_OPENAI_SPEECH_REC = "whisper-1"
 
 if any([not OPENAI_API_KEY, not OPENAI_ORGANIZATION]):
     raise Exception("OPENAI_API_KEY and OPENAI_ORGANIZATION must be set as environment variables.")
@@ -162,17 +163,17 @@ def stream_openai(
 
 def transcribe_via_openai(
     audio_file: BinaryIO,
-    model:OpenaiTTS = "whisper-1",
+    model:OpenaiSpeechRec = DEFAULT_OPENAI_SPEECH_REC,
     verbose=True
 ):
     """
-    Transcribe an audio file using the Whisper model.
+    Transcribe an audio file using an OpenAI speech recognition model.
     """
 
     response_format = 'verbose_json' if verbose else 'json'
 
     transcription_response = CLIENT.audio.transcriptions.create(
-        model="whisper-1", 
+        model=model, 
         file=audio_file,
         response_format=response_format,
     )

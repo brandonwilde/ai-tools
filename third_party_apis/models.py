@@ -5,7 +5,7 @@ OpenaiLLMs = Literal[
     "gpt-4o-mini",
     "gpt-3.5-turbo",
 ]
-OpenaiTTS = Literal[
+OpenaiSpeechRec = Literal[
     "whisper-1",
 ]
 OPENAI_LLM_INFO = {
@@ -25,6 +25,12 @@ OPENAI_LLMS = {
         "output_cost_per_M": 1.50,
     },
 }
+OPENAI_SPEECH_REC = {
+    "whisper-1": {
+        "cost_per_min": 0.0006,
+    },
+}
+
 
 AnthropicLLMs = Literal[
     "claude-3-5-sonnet-20240620",
@@ -58,5 +64,9 @@ for model_name, model_data in OPENAI_LLMS.items():
 for model_name, model_data in ANTHROPIC_LLMS.items():
     ALL_LLMS[model_name] = {**model_data, "provider": "anthropic", **ANTHROPIC_LLM_INFO}
 
+ALL_SPEECH_REC = {}
+for model_name, model_data in OPENAI_SPEECH_REC.items():
+    ALL_SPEECH_REC[model_name] = {**model_data, "provider": "openai"}
+
 LLMsList = AnthropicLLMs | OpenaiLLMs
-TTSList = OpenaiTTS
+SpeechRecList = OpenaiSpeechRec

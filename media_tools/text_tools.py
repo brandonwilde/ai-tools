@@ -8,7 +8,10 @@ from media_tools.utils import log_time
 DEFAULT_LLM = "gpt-4o-mini"
 
 
-def log_token_usage(usage, model):
+def log_token_usage(
+    usage: dict,
+    model:LLMsList = DEFAULT_LLM,
+):
     '''
     Log the token usage and cost of a response from an LLM.
     '''
