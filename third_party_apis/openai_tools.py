@@ -164,18 +164,19 @@ def stream_openai(
 def transcribe_via_openai(
     audio_file: BinaryIO,
     model:OpenaiSpeechRec = DEFAULT_OPENAI_SPEECH_REC,
-    verbose=True
 ):
     """
     Transcribe an audio file using an OpenAI speech recognition model.
-    """
 
-    response_format = 'verbose_json' if verbose else 'json'
+    Args:
+    - audio_file (BinaryIO): The MP3 audio file to transcribe.
+    - model (str): The OpenAI speech recognition model to use.
+    """
 
     transcription_response = CLIENT.audio.transcriptions.create(
         model=model, 
         file=audio_file,
-        response_format=response_format,
+        response_format='verbose_json',
     )
 
     return transcription_response

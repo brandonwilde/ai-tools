@@ -25,21 +25,8 @@ def convert_to_mp3(filepath):
     return output_file
 
 
-def get_duration(filepath):
-    """
-    Get the duration of an audio file in seconds using ffprobe.
-    """
-    duration = subprocess.run(
-        ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", filepath],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=True
-    ).stdout
-    return round(float(duration))
-
-
 def log_transcription_cost(
-    duration: int,
+    duration: float,
     model:SpeechRecList = DEFAULT_SPEECH_REC,
 ):
     '''
@@ -50,12 +37,16 @@ def log_transcription_cost(
     - model (str): The speech recognition model used.
     '''
 
-    minutes = duration / 60
-    plus_seconds = duration % 60
-    cost = minutes * ALL_SPEECH_REC[model]['cost_per_min']
+    duration_sec = round(duration)
+    duration_min = duration_sec / 60
+    
+    cost = duration_min * ALL_SPEECH_REC[model]['cost_per_min']
+
+    minutes = int(duration_sec // 60)
+    seconds = duration_sec % 60
 
     data = [
-        ["Duration", f"{int(minutes)}m {int(plus_seconds)}s"],
+        ["Duration", f"{minutes}m {seconds}s"],
         ["Cost", f"${cost:.5f}"],
     ]
 
@@ -79,13 +70,12 @@ def transcribe(
     else:
         mp3_file = convert_to_mp3(file_path)
 
-    duration_s = get_duration(mp3_file)
-
     print(f'Calling speech recognition model "{model}"...\n')
 
     with open(mp3_file, "rb") as audio_file:
         transcription_response = _transcribe(audio_file)
 
-    log_transcription_cost(duration_s, model)
+    duration = transcription_response.model_extra['duration']
+    log_transcription_cost(duration, model)
 
     return transcription_response
