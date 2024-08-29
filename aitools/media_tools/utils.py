@@ -1,6 +1,5 @@
 import base64
 from functools import wraps
-import inspect
 import os
 import string
 import time

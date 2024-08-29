@@ -1,4 +1,4 @@
-from typing import List, Literal
+from typing import Literal
 
 
 def generate_image_via_openai(

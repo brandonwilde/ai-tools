@@ -9,8 +9,6 @@ from aitools.third_party_apis.models import AnthropicLLMs
 ANTHROPIC_API_KEY=os.environ.get('ANTHROPIC_API_KEY')
 DEFAULT_ANTHROPIC_LLM = "claude-3-haiku-20240307"
 
-# TODO: Update Anthropic prompt function to handle images as well.
-# TODO: Add Anthropic chat function
 
 if not ANTHROPIC_API_KEY:
     raise Exception("ANTHROPIC_API_KEY must be set as an environment variable.")
