@@ -2,7 +2,7 @@ import os
 import subprocess
 from tabulate import tabulate
 
-from third_party_apis.models import SpeechRecList, ALL_SPEECH_REC
+from aitools.third_party_apis.models import SpeechRecList, ALL_SPEECH_REC
 
 DEFAULT_SPEECH_REC = "whisper-1"
 
@@ -63,7 +63,7 @@ def transcribe(
     Transcribe an audio file using the Whisper model.
     """
 
-    from third_party_apis.openai_tools import transcribe_via_openai as _transcribe
+    from aitools.third_party_apis.openai_tools import transcribe_via_openai as _transcribe
 
     if file_path.endswith(".mp3"):
         mp3_file = file_path

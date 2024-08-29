@@ -1,7 +1,7 @@
 from pathlib import Path
 import sys
 
-#----Enable imports as if run from project root----#
+#----Enable script execution as if run from project root----#
 def find_repo_root(repo_name):
     current_path = Path(__file__).resolve()
     while current_path.parent != current_path: # Stop at filesystem root
@@ -13,10 +13,10 @@ def find_repo_root(repo_name):
 root_path = find_repo_root(repo_name="ai-tools")
 if str(root_path) not in sys.path:
     sys.path.append(str(root_path))
-#--------------------------------------------------#
+#-----------------------------------------------------------#
 
-from media_tools.text_tools import prompt_llm
-from media_tools.utils import filenamify
+from aitools.media_tools.text_tools import prompt_llm
+from aitools.media_tools.utils import filenamify
 
 args = {
     "company_name": "",

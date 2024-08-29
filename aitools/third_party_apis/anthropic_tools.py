@@ -3,8 +3,8 @@ from typing import List, Literal, Union
 
 import anthropic
 
-from third_party_apis.models import AnthropicLLMs
-from media_tools.utils import encode_image
+from aitools.media_tools.utils import encode_image
+from aitools.third_party_apis.models import AnthropicLLMs
 
 ANTHROPIC_API_KEY=os.environ.get('ANTHROPIC_API_KEY')
 DEFAULT_ANTHROPIC_LLM = "claude-3-haiku-20240307"

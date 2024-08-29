@@ -2,8 +2,8 @@ from typing import List, Union
 
 from tabulate import tabulate
 
-from third_party_apis.models import ALL_LLMS, LLMsList
-from media_tools.utils import log_time
+from aitools.media_tools.utils import log_time
+from aitools.third_party_apis.models import ALL_LLMS, LLMsList
 
 DEFAULT_LLM = "gpt-4o-mini"
 
@@ -71,9 +71,9 @@ def prompt_llm(
     provider = ALL_LLMS[model]['provider']
 
     if provider == "openai":
-        from third_party_apis.openai_tools import prompt_openai as _prompt_model
+        from aitools.third_party_apis.openai_tools import prompt_openai as _prompt_model
     elif provider == "anthropic":
-        from third_party_apis.anthropic_tools import prompt_claude as _prompt_model
+        from aitools.third_party_apis.anthropic_tools import prompt_claude as _prompt_model
     else:
         raise ValueError(f"Provider '{provider}' is not yet supported. Add basic prompting function for this provider.")
 
@@ -110,12 +110,12 @@ def chat_with_llm(
 
     model_info = ALL_LLMS[model]
     if model_info['provider'] == "openai":
-        from third_party_apis.openai_tools import (
+        from aitools.third_party_apis.openai_tools import (
             stream_openai as _stream_llm,
             format_openai_messages as _format_messages
         )
     elif model_info['provider'] == "anthropic":
-        from third_party_apis.anthropic_tools import (
+        from aitools.third_party_apis.anthropic_tools import (
             stream_claude as _stream_llm,
             format_claude_messages as _format_messages
         )

@@ -1,7 +1,7 @@
 from pathlib import Path
 import sys
 
-#----Enable imports as if run from project root----#
+#----Enable script execution as if run from project root----#
 def find_repo_root(repo_name):
     current_path = Path(__file__).resolve()
     while current_path.parent != current_path: # Stop at filesystem root
@@ -13,12 +13,12 @@ def find_repo_root(repo_name):
 root_path = find_repo_root(repo_name="ai-tools")
 if str(root_path) not in sys.path:
     sys.path.append(str(root_path))
-#--------------------------------------------------#
+#-----------------------------------------------------------#
 
 import requests
 
-from media_tools.image_tools import generate_image_via_openai
-from media_tools.utils import increment_file_name
+from aitools.media_tools.image_tools import generate_image_via_openai
+from aitools.media_tools.utils import increment_file_name
 
 
 def create_image(prompt, output_file, model="dall-e-3", size="1024x1024"):

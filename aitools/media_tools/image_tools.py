@@ -12,7 +12,7 @@ def generate_image_via_openai(
     Generate an image using the OpenAI API.
     """
 
-    from third_party_apis.openai_tools import CLIENT as OPENAI_CLIENT
+    from aitools.third_party_apis.openai_tools import CLIENT as OPENAI_CLIENT
 
     response = OPENAI_CLIENT.images.generate(
         model=model,

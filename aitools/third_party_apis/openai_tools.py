@@ -3,8 +3,8 @@ from typing import BinaryIO, List, Literal, Union
 
 from openai import OpenAI
 
-from third_party_apis.models import OpenaiLLMs, OpenaiSpeechRec
-from media_tools.utils import encode_image
+from aitools.media_tools.utils import encode_image
+from aitools.third_party_apis.models import OpenaiLLMs, OpenaiSpeechRec
 
 OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
 OPENAI_ORGANIZATION=os.environ.get('OPENAI_ORGANIZATION')

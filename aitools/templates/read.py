@@ -1,7 +1,7 @@
 from pathlib import Path
 import sys
 
-#----Enable imports as if run from project root----#
+#----Enable script execution as if run from project root----#
 def find_repo_root(repo_name):
     current_path = Path(__file__).resolve()
     while current_path.parent != current_path: # Stop at filesystem root
@@ -13,7 +13,7 @@ def find_repo_root(repo_name):
 root_path = find_repo_root(repo_name="ai-tools")
 if str(root_path) not in sys.path:
     sys.path.append(str(root_path))
-#--------------------------------------------------#
+#-----------------------------------------------------------#
 
 from datetime import datetime
 import os
@@ -23,7 +23,7 @@ from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
 import requests
 
-from media_tools.utils import countdown
+from aitools.media_tools.utils import countdown
 
 
 AZURE_API_KEY = os.environ.get('AZURE_API_KEY')
