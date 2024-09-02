@@ -7,9 +7,16 @@ from aitools.third_party_apis.models import SpeechRecList, ALL_SPEECH_REC
 DEFAULT_SPEECH_REC = "whisper-1"
 
 
-def convert_to_mp3(filepath):
+def convert_to_mp3(filepath: str) -> str:
     """
     Convert an audio file to mp3 format using ffmpeg.
+    The output file will be saved in the same directory as the input file.
+
+    Args:
+    - filepath (str): The path to the audio file.
+
+    Returns:
+    - output_file (str): The path to the converted mp3 file.
     """
     output_file = os.path.splitext(filepath)[0] + ".mp3"
     if os.path.exists(output_file):
