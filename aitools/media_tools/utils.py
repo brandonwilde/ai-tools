@@ -43,11 +43,17 @@ def filenamify(s: str) -> str:
 
 
 def encode_image(image_path):
+    '''
+    Encode an image as base64.
+    '''
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
 
 
 def countdown(seconds):
+    '''
+    Print a countdown timer.
+    '''
     for i in range(seconds, 0, -1):
       print(f"\r{i} seconds remaining...", end='', flush=True)
       time.sleep(1)

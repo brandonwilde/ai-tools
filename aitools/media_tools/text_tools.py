@@ -162,8 +162,7 @@ def chat_with_llm(
                         }
                     ]
                 })
-            print("System prompt:", formatted_system_prompt)
-            print("Messages:", formatted_messages)
+
             response = _stream_llm(
                 formatted_messages=formatted_messages,
                 model=model,
