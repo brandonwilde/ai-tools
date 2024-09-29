@@ -42,5 +42,5 @@ def transcribe_and_translate_audio(
     return {'transcription': text, 'translation': translation}
 
 
-input_file = "data/audio/WhatsApp Ptt 2024-08-20 at 8.01.48 PM.ogg"
+input_file = "data/audio/WhatsApp Ptt 2024-09-11 at 12.03.07 PM.ogg"
 transcribe_and_translate_audio(input_file, llm="gpt-4o-mini")

@@ -21,8 +21,8 @@ args = {
     "company_name": "Defense Unicorns",
     "job_title": "AI Engineer",
     "job_description": "", # Reads from file if empty
-    "previous_cover_letters": "", # Reads from file if empty
-    "resume": "", # Reads from file if empty
+    "previous_cover_letters": "asdf", # Reads from file if empty
+    "resume": "asf", # Reads from file if empty
     "llm": "claude-3-haiku-20240307",
     # "llm": "gpt-4o-mini",
 }
