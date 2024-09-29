@@ -1,19 +1,4 @@
 from pathlib import Path
-import sys
-
-#----Enable script execution as if run from project root----#
-def find_repo_root(repo_name):
-    current_path = Path(__file__).resolve()
-    while current_path.parent != current_path: # Stop at filesystem root
-        if current_path.name == repo_name:
-            return current_path
-        current_path = current_path.parent
-    raise FileNotFoundError(f'Could not find the root of the "{repo_name}" repository in the file path.')
-
-root_path = find_repo_root(repo_name="ai-tools")
-if str(root_path) not in sys.path:
-    sys.path.append(str(root_path))
-#-----------------------------------------------------------#
 
 from aitools.media_tools.text_tools import prompt_llm
 from aitools.media_tools.utils import filenamify
@@ -29,13 +14,12 @@ args = {
 parent_dir = Path(__file__).parent
 
 for arg in ["job_description", "previous_cover_letters", "resume"]:
-    for path in [parent_dir, root_path]:
-        if (arg_path := path / f"{arg}.txt").exists():
-            with open(arg_path, "r") as f:
-                args[arg] = f.read()
-            break
-        if not args[arg]:
-            raise Exception(f"Please provide the {arg.replace('_',' ')} in a file named '{arg}.txt'.")
+    if (arg_path := parent_dir / f"{arg}.txt").exists():
+        with open(arg_path, "r") as f:
+            args[arg] = f.read()
+        break
+    if not args[arg]:
+        raise Exception(f"Please provide the {arg.replace('_',' ')} in a file named '{arg}.txt'.")
 
 
 prompt_template = """
