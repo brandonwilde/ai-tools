@@ -152,16 +152,18 @@ def chat_with_llm(
     while True:
         try:
             print("Assistant: ", end='', flush=True)
-            formatted_messages.append({
-                "role": "assistant",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": prefill_response,
-                    }
-                ]
-            })
-
+            if prefill_response:
+                formatted_messages.append({
+                    "role": "assistant",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": prefill_response,
+                        }
+                    ]
+                })
+            print("System prompt:", formatted_system_prompt)
+            print("Messages:", formatted_messages)
             response = _stream_llm(
                 formatted_messages=formatted_messages,
                 model=model,
