@@ -1,6 +1,6 @@
 # ai-tools
 
-A collection of general-purpose tools for processing text, documents, images, and videos. Requires connecting to third-party APIs.
+A collection of general-purpose tools for processing text, documents, and images. Requires connecting to third-party APIs.
 
 ## Installation
 
@@ -8,6 +8,8 @@ After cloning the repository, install the required packages with
 ```bash
 pip install -r requirements.txt
 ```
+
+If you want to reduce the installation size, you can first remove any lines from `requirements.txt` corresponding to third-party providers you don't expect to use.
 
 ## Usage
 
