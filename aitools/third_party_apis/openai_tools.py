@@ -4,7 +4,7 @@ from typing import BinaryIO, List, Literal, Union
 from openai import OpenAI
 
 from aitools.media_tools.utils import encode_image
-from aitools.third_party_apis.models import OpenaiLLMs, OpenaiSpeechRec
+from aitools.third_party_apis.models import OpenaiImageGenerators, OpenaiImageSizes, OpenaiLLMs, OpenaiSpeechRec, OPENAI_IMAGE_GENERATORS
 
 OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
 OPENAI_ORGANIZATION=os.environ.get('OPENAI_ORGANIZATION')
@@ -165,6 +165,31 @@ def stream_openai(
         'output_tokens': chunk.usage.completion_tokens,
     }
     
+    return response
+
+
+def generate_image_via_openai(
+        prompt,
+        model:OpenaiImageGenerators ="dall-e-3",
+        size:OpenaiImageSizes = "1024x1024",
+        style='',
+        substyle='',
+        num_variations=1,
+        ):
+    """
+    Generate an image using the OpenAI API.
+    """
+
+    model_info = OPENAI_IMAGE_GENERATORS[model]
+    assert size in model_info['sizes'], f"Size '{size}' is not valid for model '{model}'."
+
+    response = CLIENT.images.generate(
+        model=model,
+        prompt=prompt,
+        n=num_variations,
+        size=size
+    )
+
     return response
 
 

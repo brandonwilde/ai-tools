@@ -1,24 +1,34 @@
-from typing import Literal
+from typing import get_args, Literal
 
+from aitools.third_party_apis.models import ImageGeneratorsList, ImageSizeList, ALL_IMAGE_GENERATORS
 
-def generate_image_via_openai(
+    
+def generate_image(
         prompt,
-        model="dall-e-3",
-        size: Literal["256x256", "512x512", "1024x1024", "1792x1024", "1024x1792"] = "1024x1792",
-        # quality,
-        # style,
+        model:ImageGeneratorsList="dall-e-3",
+        size:ImageSizeList = "1024x1024",
+        style='',
+        substyle='',
+        num_variations=1,
         ):
     """
-    Generate an image using the OpenAI API.
+    Generate an image.
     """
 
-    from aitools.third_party_apis.openai_tools import CLIENT as OPENAI_CLIENT
+    model_info = ALL_IMAGE_GENERATORS[model]
 
-    response = OPENAI_CLIENT.images.generate(
+    if model_info['provider'] == "openai":
+        from aitools.third_party_apis.openai_tools import generate_image_via_openai as _generate_image
+    elif model_info['provider'] == "recraft":
+        from aitools.third_party_apis.recraft_tools import generate_image_via_recraft as _generate_image
+
+    response = _generate_image(
         model=model,
         prompt=prompt,
-        n=1,
-        size=size
+        size=size,
+        style=style,
+        substyle=substyle,
+        num_variations=num_variations,
     )
 
     return response

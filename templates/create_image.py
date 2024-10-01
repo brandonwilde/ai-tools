@@ -1,16 +1,23 @@
 import requests
 
-from aitools.media_tools.image_tools import generate_image_via_openai
+from aitools.media_tools.image_tools import generate_image
 from aitools.media_tools.utils import increment_file_name
 
 
-def create_image(prompt, output_file, model="dall-e-3", size="1024x1024"):
+def create_image(
+        prompt,
+        output_file,
+        model="dall-e-3",
+        size="1024x1024",
+        style='',
+        substyle='',
+    ):
     '''
     Create an image using the OpenAI API.
     '''
 
     # Create image
-    image_response = generate_image_via_openai(prompt, model=model, size=size)
+    image_response = generate_image(prompt, model=model, size=size)
 
     for image in image_response.data:
         if hasattr(image, 'revised_prompt'):
@@ -28,9 +35,9 @@ def create_image(prompt, output_file, model="dall-e-3", size="1024x1024"):
     return
 
 
-output_file = "./rad_wildebeest.png"
-prompt = "A rad wildebeest."
-size = "512x512"
-model = "dall-e-2"
+output_file = "./clock2.png"
+prompt = "A simple clock."
+size = "1024x1024"
+model = "recraft"
 
 create_image(prompt, output_file, model=model, size=size)
