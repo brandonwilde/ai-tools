@@ -3,13 +3,13 @@ from pathlib import Path
 import requests
 from tabulate import tabulate
 
-from aitools.media_tools.image_tools import generate_image_via_openai
+from aitools.media_tools.image_tools import generate_image
 from aitools.media_tools.text_tools import prompt_llm
 from aitools.media_tools.utils import increment_file_name
 
 
 args = {
-    "name": "9-25-blog",
+    "name": "10-1-blog",
     "blog_post": "", # Reads from file if empty
 }
 
@@ -25,7 +25,7 @@ for arg in args:
 
 
 prompt_template = """
-I have a blog and I include an image with each blog post. Please help me generate an image for my latest blog post. The image should be relatively simple, as it will be a relatively small 128x128 header image for the blog post. Please provide 5 suggestions for the image based on the text of the blog post. Each suggestion should be a unique and creative description of the image that can be used to generate the image. Be creative, but please keep it simple and relevant to the blog post.
+I have a blog and I include an image with each blog post. Please help me generate an image for my latest blog post. The image should be relatively simple, as it will be a relatively small 128x128 header image for the blog post. Please provide 5 suggestions for the image based on the text of the blog post. Each suggestion should be a unique and creative description of the image that could be handed off to someone else to actually create it. Be creative, but please ensure that the resulting images are simple and relevant to the blog post.
 
 Response Format (JSON):
 {{
@@ -76,7 +76,7 @@ print(tabulate(data, colalign=("left", "left")))
 selected_images = []
 selected = input("Enter the numbers of the images you would like to generate, then hit Enter: ")
 for i in selected:
-    image_response = generate_image_via_openai(
+    image_response = generate_image(
         prompt=suggestions[int(i)-1]["description"],
         model='dall-e-3',
         size="1024x1024",
