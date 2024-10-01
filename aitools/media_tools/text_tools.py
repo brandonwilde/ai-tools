@@ -45,6 +45,7 @@ def prompt_llm(
     system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
     max_tokens=1000,
     temperature=1,
+    json_output=False,
 ):
     """
     Get a response from an LLM.
@@ -84,7 +85,8 @@ def prompt_llm(
         model=model,
         system_prompt=system_prompt,
         max_tokens=max_tokens,
-        temperature=temperature
+        temperature=temperature,
+        json_mode=json_output,
     )
 
     log_token_usage(response, model)

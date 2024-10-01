@@ -86,6 +86,7 @@ def prompt_openai(
     system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
     max_tokens=1000,
     temperature=1,
+    json_mode=False,
 ):
     """
     Get a response from an OpenAI LLM.
@@ -97,6 +98,9 @@ def prompt_openai(
         - image (str): The path to an image.
     - model (str): The OpenAI model to use.
     - system_prompt (str): The system prompt to use.
+    - max_tokens (int): The maximum number of tokens to generate.
+    - temperature (float): The temperature to use for token sampling.
+    - json_mode (bool): Whether to return the response as a JSON object.
 
     Returns:
     - str: The response from the LLM.
@@ -111,6 +115,9 @@ def prompt_openai(
         messages=system_and_messages,
         max_tokens=max_tokens,
         temperature=temperature,
+        response_format={
+            "type": "json_object" if json_mode else "text",
+        }
     )
 
     return {

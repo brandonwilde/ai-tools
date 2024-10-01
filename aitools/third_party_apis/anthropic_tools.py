@@ -93,6 +93,7 @@ def prompt_claude(
     system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
     max_tokens=1000,
     temperature=1,
+    json_mode=False,
 ):
     """
     Get a response from a Claude LLM.
@@ -104,6 +105,9 @@ def prompt_claude(
         - image (str): The path to an image.
     - model (str): The Claude model to use.
     - system_prompt (str): The system prompt to use.
+    - max_tokens (int): The maximum number of tokens to generate.
+    - temperature (float): The temperature to use for token sampling.
+    - json_mode (bool): Not used here but included for consistency with OpenAI prompt function.
 
     Returns:
     - str: The response from the LLM.
