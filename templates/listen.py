@@ -16,7 +16,7 @@ def transcribe_and_translate_audio(
     text = transcription.text
     print(f'\nTranscription:\n{text}\n')
 
-    if 'english' not in transcription.model_extra['language']:
+    if 'english' not in transcription.language:
         translation = translate(text, model=llm)
         print(f'\nTranslation:\n{translation}\n')
     else:
@@ -25,5 +25,5 @@ def transcribe_and_translate_audio(
     return {'transcription': text, 'translation': translation}
 
 
-input_file = "data/audio/WhatsApp Ptt 2024-09-11 at 12.03.07 PM.ogg"
+input_file = "data/audio/WhatsApp Ptt 2024-10-02 at 4.35.05 PM.ogg"
 transcribe_and_translate_audio(input_file, llm="gpt-4o-mini")

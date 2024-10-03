@@ -82,7 +82,7 @@ def transcribe(
     with open(mp3_file, "rb") as audio_file:
         transcription_response = _transcribe(audio_file)
 
-    duration = transcription_response.model_extra['duration']
+    duration = transcription_response.duration
     log_transcription_cost(duration, model)
 
     return transcription_response
