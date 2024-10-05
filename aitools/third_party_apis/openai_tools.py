@@ -122,7 +122,8 @@ def prompt_openai(
 
     return {
         "text": chat_response.choices[0].message.content,
-        "input_tokens": chat_response.usage.prompt_tokens,
+        "input_tokens": chat_response.usage.prompt_tokens - chat_response.usage.prompt_tokens_details.cached_tokens,
+        "cache_read_tokens": chat_response.usage.prompt_tokens_details.cached_tokens,
         "output_tokens": chat_response.usage.completion_tokens,
     }
 

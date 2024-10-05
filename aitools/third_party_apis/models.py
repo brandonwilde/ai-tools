@@ -28,6 +28,7 @@ OPENAI_LLMS = {
         "input_limit": 128000,
         "output_limit": 16384,
         "input_cost_per_M": 0.15,
+        "cache_read_cost_per_M": 0.075,
         "output_cost_per_M": 0.60,
     },
     "gpt-3.5-turbo": {
