@@ -2,7 +2,9 @@ from typing import Literal
 
 # Keep this list updated for accurate type-checking
 OpenaiLLMs = Literal[
+    "gpt-4o",
     "gpt-4o-mini",
+    "o1-mini",
     "gpt-3.5-turbo",
 ]
 OpenaiImageGenerators = Literal[
@@ -24,12 +26,26 @@ OPENAI_LLM_INFO = {
     "max_temp": 2,
 }
 OPENAI_LLMS = {
+    "gpt-4o": {
+        "input_limit": 128000,
+        "output_limit": 16384,
+        "input_cost_per_M": 2.50,
+        "cache_read_cost_per_M": 1.25,
+        "output_cost_per_M": 10,
+    },
     "gpt-4o-mini": {
         "input_limit": 128000,
         "output_limit": 16384,
         "input_cost_per_M": 0.15,
         "cache_read_cost_per_M": 0.075,
         "output_cost_per_M": 0.60,
+    },
+    "o1-mini": {
+        "input_limit": 128000,
+        "output_limit": 65536,
+        "input_cost_per_M": 3.00,
+        "cache_read_cost_per_M": 1.50,
+        "output_cost_per_M": 12.00,
     },
     "gpt-3.5-turbo": {
         "input_limit": 16385,

@@ -46,7 +46,7 @@ def prompt_llm(
     max_tokens=DEFAULT_LLM_INFO['output_limit'],
     temperature=1,
     json_output=False,
-):
+) -> str:
     """
     Get a response from an LLM.
 
