@@ -4,11 +4,12 @@ from typing import List, Literal, Union
 import anthropic
 
 from aitools.media_tools.utils import encode_image
-from aitools.third_party_apis.models import AnthropicLLMs
+from aitools.third_party_apis.models import ALL_LLMS, AnthropicLLMs
 
 ANTHROPIC_API_KEY=os.environ.get('ANTHROPIC_API_KEY')
 DEFAULT_ANTHROPIC_LLM = "claude-3-haiku-20240307"
 
+DEFAULT_ANTHROPIC_LLM_INFO = ALL_LLMS[DEFAULT_ANTHROPIC_LLM]
 
 if not ANTHROPIC_API_KEY:
     raise Exception("ANTHROPIC_API_KEY must be set as an environment variable.")
@@ -91,7 +92,7 @@ def prompt_claude(
     messages: List[Union[str,dict]],
     model:AnthropicLLMs = DEFAULT_ANTHROPIC_LLM,
     system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
-    max_tokens=1000,
+    max_tokens=DEFAULT_ANTHROPIC_LLM_INFO['output_limit'],
     temperature=1,
     json_mode=False,
 ):
@@ -136,7 +137,7 @@ def stream_claude(
     formatted_messages: List[dict],
     model:AnthropicLLMs = DEFAULT_ANTHROPIC_LLM,
     formatted_system_prompt:List[dict] = [{'text': "You are a helpful assistant."}],
-    max_tokens=1024,
+    max_tokens=DEFAULT_ANTHROPIC_LLM_INFO['output_limit'],
     temperature=1,
     caching=False,
 ):

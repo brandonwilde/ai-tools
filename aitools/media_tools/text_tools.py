@@ -6,7 +6,7 @@ from aitools.media_tools.utils import log_time
 from aitools.third_party_apis.models import ALL_LLMS, LLMsList
 
 DEFAULT_LLM = "gpt-4o-mini"
-
+DEFAULT_LLM_INFO = ALL_LLMS[DEFAULT_LLM]
 
 def log_token_usage(
     usage: dict,
@@ -43,7 +43,7 @@ def prompt_llm(
     messages: List[Union[str,dict]],
     model:LLMsList = DEFAULT_LLM,
     system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
-    max_tokens=1000,
+    max_tokens=DEFAULT_LLM_INFO['output_limit'],
     temperature=1,
     json_output=False,
 ):
@@ -99,7 +99,7 @@ def chat_with_llm(
     model:LLMsList = DEFAULT_LLM,
     system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
     prefill_response="",
-    max_tokens=1024,
+    max_tokens=DEFAULT_LLM_INFO['output_limit'],
     temperature=1,
     cache=True,
 ):

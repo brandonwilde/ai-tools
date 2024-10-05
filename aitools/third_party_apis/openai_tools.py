@@ -4,12 +4,14 @@ from typing import BinaryIO, List, Literal, Union
 from openai import OpenAI
 
 from aitools.media_tools.utils import encode_image
-from aitools.third_party_apis.models import OpenaiImageGenerators, OpenaiImageSizes, OpenaiLLMs, OpenaiSpeechRec, OPENAI_IMAGE_GENERATORS
+from aitools.third_party_apis.models import ALL_LLMS, OpenaiImageGenerators, OpenaiImageSizes, OpenaiLLMs, OpenaiSpeechRec, OPENAI_IMAGE_GENERATORS
 
 OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
 OPENAI_ORGANIZATION=os.environ.get('OPENAI_ORGANIZATION')
 DEFAULT_OPENAI_LLM = "gpt-4o-mini"
 DEFAULT_OPENAI_SPEECH_REC = "whisper-1"
+
+DEFAULT_OPENAI_LLM_INFO = ALL_LLMS[DEFAULT_OPENAI_LLM]
 
 if any([not OPENAI_API_KEY, not OPENAI_ORGANIZATION]):
     raise Exception("OPENAI_API_KEY and OPENAI_ORGANIZATION must be set as environment variables.")
@@ -84,7 +86,7 @@ def prompt_openai(
     messages: List[Union[str,dict]],
     model:OpenaiLLMs = DEFAULT_OPENAI_LLM,
     system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
-    max_tokens=1000,
+    max_tokens=DEFAULT_OPENAI_LLM_INFO['output_limit'],
     temperature=1,
     json_mode=False,
 ):
@@ -132,7 +134,7 @@ def stream_openai(
     formatted_messages: List[dict],
     model:OpenaiLLMs = DEFAULT_OPENAI_LLM,
     formatted_system_prompt:List[dict] = [{'text': "You are a helpful assistant."}],
-    max_tokens=1024,
+    max_tokens=DEFAULT_OPENAI_LLM_INFO['output_limit'],
     temperature=1,
     caching=False,
 ):
@@ -140,7 +142,7 @@ def stream_openai(
     Stream a response from an OpenAI LLM.
     Prints the response as it is generated.
 
-    *Caching not used here, but included for consistency with Anthropic stream function.
+    *Caching is done automatically, but param is included for consistency with Anthropic stream function.
     """
 
     chat_response = CLIENT.chat.completions.create(
