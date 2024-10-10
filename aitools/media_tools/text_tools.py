@@ -43,7 +43,7 @@ def prompt_llm(
     messages: List[Union[str,dict]],
     model:LLMsList = DEFAULT_LLM,
     system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
-    max_tokens=DEFAULT_LLM_INFO['output_limit'],
+    max_tokens=0,
     temperature=1,
     json_output=False,
 ) -> str:
@@ -57,7 +57,7 @@ def prompt_llm(
         - image (str): The path to an image.
     - model (str): The LLM to use.
     - system_prompt (str): The system prompt to use.
-    - max_tokens (int): The maximum number of tokens to generate.
+    - max_tokens (int): The maximum number of tokens to generate. If not specified, the model's output limit will be used.
     - temperature (float): The temperature to use for token sampling.
 
     Returns:
@@ -84,7 +84,7 @@ def prompt_llm(
         messages=messages,
         model=model,
         system_prompt=system_prompt,
-        max_tokens=max_tokens,
+        max_tokens=max_tokens if max_tokens else model_info['output_limit'],
         temperature=temperature,
         json_mode=json_output,
     )
@@ -99,7 +99,7 @@ def chat_with_llm(
     model:LLMsList = DEFAULT_LLM,
     system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
     prefill_response="",
-    max_tokens=DEFAULT_LLM_INFO['output_limit'],
+    max_tokens=0,
     temperature=1,
     cache=True,
 ):
@@ -107,10 +107,15 @@ def chat_with_llm(
     Conversational interface with an LLM.
     Can optionally include a list of messages to start the conversation.
     Specify prefill_response to provide the first words of the assistant's responses.
+    Max tokens will be set to the model's output limit if not specified.
     Set cache to True to cache messages throughout the conversation. Generally a good idea for long conversations.
     """
 
     model_info = ALL_LLMS[model]
+
+    assert max_tokens <= model_info['output_limit'], f"max_tokens must be less than or equal to {model_info['output_limit']} for {model}, but you requested up to {max_tokens} tokens."
+    assert 0 <= temperature <= model_info['max_temp'], f"Permissible temperature values range from 0 to {model_info['max_temp']} for {model}, but you requested a temp of {temperature}."
+    
     if model_info['provider'] == "openai":
         from aitools.third_party_apis.openai_tools import (
             stream_openai as _stream_llm,
@@ -169,7 +174,7 @@ def chat_with_llm(
                 formatted_messages=formatted_messages,
                 model=model,
                 formatted_system_prompt=formatted_system_prompt,
-                max_tokens=max_tokens,
+                max_tokens=max_tokens if max_tokens else model_info['output_limit'],
                 temperature=temperature,
                 caching=cache
             )
