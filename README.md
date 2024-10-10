@@ -29,3 +29,15 @@ The tools are generally intended to be called by other scripts. Example applicat
 ```bash
 python -m templates.<template_name>
 ```
+
+## Usage in a project
+
+To use the tools in a separate project, first install your local version of this repo in your project's virtual environment. With the virtual environment activated, navigate to the root of this repository and run
+```bash
+pip install -e .
+```
+
+Then import the tools in your script with
+```python
+from ai_tools import <tool_name>
+```
