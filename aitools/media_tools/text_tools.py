@@ -78,6 +78,9 @@ def prompt_llm(
     else:
         raise ValueError(f"Provider '{provider}' is not yet supported. Add basic prompting function for this provider.")
 
+    if not isinstance(messages, list):
+        raise TypeError("Messages must be a list of dictionary objects.")
+        
     print(f'Calling LLM "{model}"...\n')
 
     response = _prompt_model(
@@ -144,6 +147,8 @@ def chat_with_llm(
         print()
 
     else:
+        if not isinstance(messages, list):
+            raise TypeError("Messages must be a list of dictionary objects.")
         for m in messages:
             if 'text' in m:
                 print("User:", m['text'], '\n')
