@@ -1,3 +1,9 @@
+#-------------Enable execution from non-root----------------#
+import sys
+from pathlib import Path
+sys.path.append(str(next(p for p in Path(__file__).resolve().parents if p.name == 'ai-tools')))
+#-----------------------------------------------------------#
+
 from datetime import datetime
 import os
 import re

@@ -25,10 +25,7 @@ If you want to reduce the installation size, you can first remove any lines from
 
 ## Usage
 
-The tools are generally intended to be called by other scripts. Example applications are included in the `templates` directory. To execute a template script, run
-```bash
-python -m templates.<template_name>
-```
+The tools are generally intended to be called by other scripts. Example use cases are included in the `templates` directory. These can be executed directly or imported into other scripts.
 
 ## Usage in a project
 

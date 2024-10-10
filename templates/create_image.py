@@ -1,3 +1,9 @@
+#-------------Enable execution from non-root----------------#
+import sys
+from pathlib import Path
+sys.path.append(str(next(p for p in Path(__file__).resolve().parents if p.name == 'ai-tools')))
+#-----------------------------------------------------------#
+
 import requests
 
 from aitools.media_tools.image_tools import generate_image
