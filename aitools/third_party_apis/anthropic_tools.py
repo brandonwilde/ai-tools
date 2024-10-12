@@ -33,7 +33,7 @@ def format_claude_messages(
         - code (str): A code snippet.
         - image (str): The path to an image.
         If "cache" is also included in a message, a cache_control will be added after the message.
-    - system_prompt (str): Not used here but included for consistency with OpenAI format function.
+    - role (str): The role (system, user, assistant) of the message sender.
     - cache_messages (bool): Whether to cache the conversation. Will add cache_control after the last message.
     '''
 

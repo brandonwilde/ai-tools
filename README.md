@@ -6,7 +6,7 @@ A collection of general-purpose tools for processing text, documents, and images
 
 New tools and providers are added as need arises. Currently included are the following tools and providers:
 
-- LLM prompting - OpenAI, Anthropic
+- LLM prompting - OpenAI, Anthropic, Google
 - LLM chat - OpenAI, Anthropic
 - Translation - OpenAI, Anthropic
 - Image analysis - OpenAI, Anthropic

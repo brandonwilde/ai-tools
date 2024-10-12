@@ -95,6 +95,21 @@ ANTHROPIC_LLMS = {
     },
 }
 
+GoogleLLMs = Literal[
+    "gemini-1.5-flash",
+]
+GOOGLE_LLM_INFO = {
+    "max_temp": 2,
+}
+GOOGLE_LLMS = {
+    "gemini-1.5-flash": {
+        "input_limit": 1048576,
+        "output_limit": 8192,
+        "input_cost_per_M": 0.075, # up to 128k tokens, doubles after that
+        "output_cost_per_M": 0.30, # up to 128k tokens, doubles after that
+    },
+}
+
 RecraftImageGenerators = Literal[
     "recraft",
 ]
@@ -126,6 +141,8 @@ for model_name, model_data in OPENAI_LLMS.items():
     ALL_LLMS[model_name] = {**model_data, "provider": "openai", **OPENAI_LLM_INFO}
 for model_name, model_data in ANTHROPIC_LLMS.items():
     ALL_LLMS[model_name] = {**model_data, "provider": "anthropic", **ANTHROPIC_LLM_INFO}
+for model_name, model_data in GOOGLE_LLMS.items():
+    ALL_LLMS[model_name] = {**model_data, "provider": "google", **GOOGLE_LLM_INFO}
 
 ALL_IMAGE_GENERATORS = {}
 for model_name, model_data in OPENAI_IMAGE_GENERATORS.items():
@@ -137,7 +154,7 @@ ALL_SPEECH_REC = {}
 for model_name, model_data in OPENAI_SPEECH_REC.items():
     ALL_SPEECH_REC[model_name] = {**model_data, "provider": "openai"}
 
-LLMsList = AnthropicLLMs | OpenaiLLMs
+LLMsList = AnthropicLLMs | OpenaiLLMs | GoogleLLMs
 ImageGeneratorsList = OpenaiImageGenerators | RecraftImageGenerators
 ImageSizeList = OpenaiImageSizes | RecraftImageSizes
 SpeechRecList = OpenaiSpeechRec

@@ -75,6 +75,8 @@ def prompt_llm(
         from aitools.third_party_apis.openai_tools import prompt_openai as _prompt_model
     elif provider == "anthropic":
         from aitools.third_party_apis.anthropic_tools import prompt_claude as _prompt_model
+    elif provider == "google":
+        from aitools.third_party_apis.google_tools import prompt_gemini as _prompt_model
     else:
         raise ValueError(f"Provider '{provider}' is not yet supported. Add basic prompting function for this provider.")
 
