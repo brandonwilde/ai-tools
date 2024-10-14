@@ -108,6 +108,18 @@ GOOGLE_LLMS = {
         "input_cost_per_M": 0.075, # up to 128k tokens, doubles after that
         "output_cost_per_M": 0.30, # up to 128k tokens, doubles after that
     },
+    "gemini-1.5-flash-8b": {
+        "input_limit": 1048576,
+        "output_limit": 8192,
+        "input_cost_per_M": 0.0375, # up to 128k tokens, doubles after that
+        "output_cost_per_M": 0.15, # up to 128k tokens, doubles after that
+    },
+    "gemini-1.5-pro": {
+        "input_limit": 2097152,
+        "output_limit": 8192,
+        "input_cost_per_M": 1.25, # up to 128k tokens, doubles after that
+        "output_cost_per_M": 5, # up to 128k tokens, doubles after that
+    },
 }
 
 RecraftImageGenerators = Literal[
