@@ -70,6 +70,7 @@ OPENAI_SPEECH_REC = {
 
 
 AnthropicLLMs = Literal[
+    "claude-3-5-sonnet-20241022",
     "claude-3-5-sonnet-20240620",
     "claude-3-haiku-20240307",
 ]
@@ -77,6 +78,14 @@ ANTHROPIC_LLM_INFO = {
     "max_temp": 1,
 }
 ANTHROPIC_LLMS = {
+    "claude-3-5-sonnet-20241022": {
+        "input_limit": 200000,
+        "output_limit": 8192,
+        "input_cost_per_M": 3,
+        "cache_write_cost_per_M": 3.75,
+        "cache_read_cost_per_M": 0.3,
+        "output_cost_per_M": 15,
+    },
     "claude-3-5-sonnet-20240620": {
         "input_limit": 200000,
         "output_limit": 8192,
@@ -97,6 +106,8 @@ ANTHROPIC_LLMS = {
 
 GoogleLLMs = Literal[
     "gemini-1.5-flash",
+    "gemini-1.5-flash-8b",
+    "gemini-1.5-pro",
 ]
 GOOGLE_LLM_INFO = {
     "max_temp": 2,
