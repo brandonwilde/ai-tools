@@ -27,12 +27,13 @@ If you want to reduce the installation size, you can first remove any lines from
 
 The tools are generally intended to be called by other scripts. Example use cases are included in the `templates` directory. These can be executed directly or imported into other scripts.
 
-## Usage in a project
+## Usage in a separate project
 
-To use the tools in a separate project, first install your local version of this repo in your project's virtual environment. With the virtual environment activated, navigate to the root of this repository and run
+To use the tools in a separate project, you can install this package from source with
 ```bash
-pip install -e .
+pip install git+https://github.com/brandonwilde/ai-tools.git@main[<extras>]
 ```
+Replace `<extras>` with a list of any extra dependencies you want to install. Options are `openai`, `anthropic`, `google`, `azure`, and `all`. Omitting `@main[<extras>]` to install only the base dependencies.
 
 Then import the tools in your script with
 ```python
