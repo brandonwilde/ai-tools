@@ -1,4 +1,4 @@
-# ai-tools
+# ai-tools [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/brandonwilde/ai-tools)
 
 A collection of general-purpose tools for processing text, documents, and images. Requires connecting to third-party APIs.
 
