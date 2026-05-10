@@ -11,12 +11,15 @@ DEFAULT_ANTHROPIC_LLM = "claude-3-haiku-20240307"
 
 DEFAULT_ANTHROPIC_LLM_INFO = ALL_LLMS[DEFAULT_ANTHROPIC_LLM]
 
-if not ANTHROPIC_API_KEY:
-    raise Exception("ANTHROPIC_API_KEY must be set as an environment variable.")
+_client = None
 
-CLIENT = anthropic.Anthropic(
-    api_key=ANTHROPIC_API_KEY,
-)
+def _get_client() -> anthropic.Anthropic:
+    global _client
+    if _client is None:
+        if not ANTHROPIC_API_KEY:
+            raise ValueError("ANTHROPIC_API_KEY must be set as an environment variable.")
+        _client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    return _client
 
 
 def format_claude_messages(
@@ -39,7 +42,7 @@ def format_claude_messages(
 
     content = []
     for message in messages:
-        if type(message) is str:
+        if isinstance(message, str):
             message = {"text": message}
         if 'text' in message:
             content.append({
@@ -118,7 +121,7 @@ def prompt_claude(
     formatted_system_prompt = format_claude_messages(system_prompt, role="system")
     formatted_messages = format_claude_messages(messages)
 
-    message = CLIENT.messages.create(
+    message = _get_client().messages.create(
         model=model,
         system=formatted_system_prompt,
         messages=formatted_messages,
@@ -147,9 +150,9 @@ def stream_claude(
     """
 
     if caching:
-        client_stream = CLIENT.beta.prompt_caching.messages.stream
+        client_stream = _get_client().beta.prompt_caching.messages.stream
     else:
-        client_stream = CLIENT.messages.stream
+        client_stream = _get_client().messages.stream
 
     with client_stream(
         model=model,

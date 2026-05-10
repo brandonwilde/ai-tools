@@ -13,13 +13,15 @@ DEFAULT_OPENAI_SPEECH_REC = "whisper-1"
 
 DEFAULT_OPENAI_LLM_INFO = ALL_LLMS[DEFAULT_OPENAI_LLM]
 
-if any([not OPENAI_API_KEY, not OPENAI_ORGANIZATION]):
-    raise Exception("OPENAI_API_KEY and OPENAI_ORGANIZATION must be set as environment variables.")
+_client = None
 
-CLIENT = OpenAI(
-    api_key=OPENAI_API_KEY,
-    organization=OPENAI_ORGANIZATION,
-)
+def _get_client() -> OpenAI:
+    global _client
+    if _client is None:
+        if not OPENAI_API_KEY or not OPENAI_ORGANIZATION:
+            raise ValueError("OPENAI_API_KEY and OPENAI_ORGANIZATION must be set as environment variables.")
+        _client = OpenAI(api_key=OPENAI_API_KEY, organization=OPENAI_ORGANIZATION)
+    return _client
 
 
 def format_openai_messages(
@@ -42,7 +44,7 @@ def format_openai_messages(
     content = []
 
     for message in messages:
-        if type(message) is str:
+        if isinstance(message, str):
             message = {"text": message}
         if 'text' in message:
             content.append({
@@ -112,7 +114,7 @@ def prompt_openai(
     formatted_messages = format_openai_messages(messages)
     system_and_messages = formatted_system_prompt + formatted_messages
 
-    chat_response = CLIENT.chat.completions.create(
+    chat_response = _get_client().chat.completions.create(
         model=model,
         messages=system_and_messages,
         max_tokens=max_tokens,
@@ -145,7 +147,7 @@ def stream_openai(
     *Caching is done automatically, but param is included for consistency with Anthropic stream function.
     """
 
-    chat_response = CLIENT.chat.completions.create(
+    chat_response = _get_client().chat.completions.create(
         model=model,
         messages=formatted_system_prompt+formatted_messages,
         stream=True,
@@ -186,7 +188,7 @@ def generate_image_via_openai(
     model_info = OPENAI_IMAGE_GENERATORS[model]
     assert size in model_info['sizes'], f"Size '{size}' is not valid for model '{model}'."
 
-    response = CLIENT.images.generate(
+    response = _get_client().images.generate(
         model=model,
         prompt=prompt,
         n=num_variations,
@@ -208,7 +210,7 @@ def transcribe_via_openai(
     - model (str): The OpenAI speech recognition model to use.
     """
 
-    transcription_response = CLIENT.audio.transcriptions.create(
+    transcription_response = _get_client().audio.transcriptions.create(
         model=model, 
         file=audio_file,
         response_format='verbose_json',
