@@ -18,9 +18,9 @@ _client = None
 def _get_client() -> OpenAI:
     global _client
     if _client is None:
-        if not OPENAI_API_KEY or not OPENAI_ORGANIZATION:
-            raise ValueError("OPENAI_API_KEY and OPENAI_ORGANIZATION must be set as environment variables.")
-        _client = OpenAI(api_key=OPENAI_API_KEY, organization=OPENAI_ORGANIZATION)
+        if not OPENAI_API_KEY:
+            raise ValueError("OPENAI_API_KEY must be set as an environment variable.")
+        _client = OpenAI(api_key=OPENAI_API_KEY, organization=OPENAI_ORGANIZATION or None)
     return _client
 
 

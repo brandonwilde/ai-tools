@@ -135,7 +135,8 @@ def prompt_claude(
     )
 
     return {
-        "text": message.content[0].text,
+        # newer models may emit thinking blocks before the text block
+        "text": "".join(b.text for b in message.content if b.type == "text"),
         "input_tokens": message.usage.input_tokens,
         "output_tokens": message.usage.output_tokens,
     }
@@ -170,7 +171,7 @@ def stream_claude(
             print(text_chunk, end="", flush=True)
 
     response = {
-        'text': stream.current_message_snapshot.content[0].text,
+        'text': "".join(b.text for b in stream.current_message_snapshot.content if b.type == "text"),
         'input_tokens': stream.current_message_snapshot.usage.input_tokens,
         'output_tokens': stream.current_message_snapshot.usage.output_tokens,
     }
