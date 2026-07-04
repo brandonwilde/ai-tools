@@ -89,7 +89,7 @@ def prompt_openai(
     model:OpenaiLLMs = DEFAULT_OPENAI_LLM,
     system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
     max_tokens=DEFAULT_OPENAI_LLM_INFO['output_limit'],
-    temperature=1,
+    temperature=None,
     json_mode=False,
 ):
     """
@@ -103,7 +103,8 @@ def prompt_openai(
     - model (str): The OpenAI model to use.
     - system_prompt (str): The system prompt to use.
     - max_tokens (int): The maximum number of tokens to generate.
-    - temperature (float): The temperature to use for token sampling.
+    - temperature (float): The temperature to use for token sampling. Omitted from the
+        request when None; GPT-5.x models reject the parameter.
     - json_mode (bool): Whether to return the response as a JSON object.
 
     Returns:
@@ -114,14 +115,17 @@ def prompt_openai(
     formatted_messages = format_openai_messages(messages)
     system_and_messages = formatted_system_prompt + formatted_messages
 
+    request_kwargs = {}
+    if temperature is not None and ALL_LLMS[model].get("supports_temperature", True):
+        request_kwargs["temperature"] = temperature
+    if json_mode:
+        request_kwargs["response_format"] = {"type": "json_object"}
+
     chat_response = _get_client().chat.completions.create(
         model=model,
         messages=system_and_messages,
-        max_tokens=max_tokens,
-        temperature=temperature,
-        response_format={
-            "type": "json_object" if json_mode else "text",
-        }
+        max_completion_tokens=max_tokens,  # GPT-5.x models reject the old max_tokens param
+        **request_kwargs,
     )
 
     return {

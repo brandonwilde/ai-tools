@@ -12,7 +12,7 @@ messages = [
 ]
 
 def main(messages):
-    chat_with_llm(messages, model="claude-3-haiku-20240307", cache=True)
+    chat_with_llm(messages, model="claude-haiku-4-5", cache=True)
 
 if __name__ == "__main__":
     main(messages)

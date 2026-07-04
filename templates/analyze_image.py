@@ -14,6 +14,6 @@ messages = [
     {'image': image_path},
 ]
 
-result = prompt_llm(messages, model="claude-3-haiku-20240307")
+result = prompt_llm(messages, model="claude-haiku-4-5")
 
 print(result)

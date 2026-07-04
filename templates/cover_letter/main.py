@@ -13,7 +13,7 @@ args = {
     "job_description": "", # Reads from file if empty
     "previous_cover_letters": "", # Reads from file if empty
     "resume": "", # Reads from file if empty
-    "llm": "claude-3-haiku-20240307",
+    "llm": "claude-haiku-4-5",
     # "llm": "gpt-4o-mini",
 }
 

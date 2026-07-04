@@ -44,7 +44,7 @@ def prompt_llm(
     model:LLMsList = DEFAULT_LLM,
     system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
     max_tokens=0,
-    temperature=1,
+    temperature=None,
     json_output=False,
 ) -> str:
     """
@@ -57,18 +57,20 @@ def prompt_llm(
         - image (str): The path to an image.
     - model (str): The LLM to use.
     - system_prompt (str): The system prompt to use.
-    - max_tokens (int): The maximum number of tokens to generate. If not specified, the model's output limit will be used.
-    - temperature (float): The temperature to use for token sampling.
+    - max_tokens (int): The maximum number of tokens to generate. If not specified, the model's output limit (capped at 8192) will be used.
+    - temperature (float): The temperature to use for token sampling. Omitted from the
+        request when None; some newer models reject the parameter.
 
     Returns:
     - str: The response from the LLM.
     """
-    
+
     model_info = ALL_LLMS[model]
 
     assert max_tokens <= model_info['output_limit'], f"max_tokens must be less than or equal to {model_info['output_limit']} for {model}, but you requested up to {max_tokens} tokens."
-    assert 0 <= temperature <= model_info['max_temp'], f"Permissible temperature values range from 0 to {model_info['max_temp']} for {model}, but you requested a temp of {temperature}."
-    
+    if temperature is not None:
+        assert 0 <= temperature <= model_info['max_temp'], f"Permissible temperature values range from 0 to {model_info['max_temp']} for {model}, but you requested a temp of {temperature}."
+
     provider = ALL_LLMS[model]['provider']
 
     if provider == "openai":
@@ -77,19 +79,24 @@ def prompt_llm(
         from aitools.third_party_apis.anthropic_tools import prompt_claude as _prompt_model
     elif provider == "google":
         from aitools.third_party_apis.google_tools import prompt_gemini as _prompt_model
+    elif provider == "deepseek":
+        from aitools.third_party_apis.deepseek_tools import prompt_deepseek as _prompt_model
+    elif provider == "mistral":
+        from aitools.third_party_apis.mistral_tools import prompt_mistral as _prompt_model
     else:
         raise ValueError(f"Provider '{provider}' is not yet supported. Add basic prompting function for this provider.")
 
     if not isinstance(messages, list):
         raise TypeError("Messages must be a list of dictionary objects.")
-        
+
     print(f'Calling LLM "{model}"...\n')
 
     response = _prompt_model(
         messages=messages,
         model=model,
         system_prompt=system_prompt,
-        max_tokens=max_tokens if max_tokens else model_info['output_limit'],
+        # Cap the default at 8192: huge non-streaming requests trip SDK timeout guards
+        max_tokens=max_tokens if max_tokens else min(model_info['output_limit'], 8192),
         temperature=temperature,
         json_mode=json_output,
     )
@@ -97,6 +104,24 @@ def prompt_llm(
     log_token_usage(response, model)
 
     return response["text"]
+
+
+def available_models() -> dict:
+    """Return the LLM catalog filtered to models whose provider API key is set."""
+    import os
+
+    key_vars = {
+        "anthropic": "ANTHROPIC_API_KEY",
+        "openai": "OPENAI_API_KEY",
+        "google": "GOOGLE_API_KEY",
+        "deepseek": "DEEPSEEK_API_KEY",
+        "mistral": "MISTRAL_API_KEY",
+    }
+    return {
+        name: info
+        for name, info in ALL_LLMS.items()
+        if os.environ.get(key_vars.get(info["provider"], ""))
+    }
 
 
 def chat_with_llm(

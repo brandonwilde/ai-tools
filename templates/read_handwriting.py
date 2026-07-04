@@ -34,6 +34,6 @@ messages = [
     {'text': transcription}
 ]
 
-result = prompt_llm(messages, system_prompt=system_prompt, model="claude-3-haiku-20240307")
+result = prompt_llm(messages, system_prompt=system_prompt, model="claude-haiku-4-5")
 
 print(result)
