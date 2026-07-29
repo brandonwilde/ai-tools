@@ -16,7 +16,7 @@ setup(
         'all': read_requirements(),
         'openai': ['openai>=1.51.0'],
         'anthropic': ['anthropic>=0.34.2'],
-        'google': ['google-generativeai>=0.8.3'],
+        'google': ['google-generativeai>=0.8.3', 'google-genai>=1.0.0'],
         'azure': ['azure-ai-formrecognizer>=3.3.3', 'azure-core>=1.31.0'],
     },
     author='Brandon T Wilde',
