@@ -46,6 +46,7 @@ def prompt_llm(
     max_tokens=0,
     temperature=None,
     json_output=False,
+    cache_system_prompt: bool = False,
 ) -> str:
     """
     Get a response from an LLM.
@@ -60,6 +61,11 @@ def prompt_llm(
     - max_tokens (int): The maximum number of tokens to generate. If not specified, the model's output limit (capped at 8192) will be used.
     - temperature (float): The temperature to use for token sampling. Omitted from the
         request when None; some newer models reject the parameter.
+    - cache_system_prompt (bool): Whether to place an explicit prompt-cache breakpoint on
+        the system prompt. Only forwarded to the Anthropic provider, which requires an
+        explicit cache_control breakpoint to cache. It's silently ignored for other providers,
+        since they cache automatically without an explicit breakpoint - no per-call warning
+        is printed, since this function can run once per turn in a loop.
 
     Returns:
     - str: The response from the LLM.
@@ -91,6 +97,10 @@ def prompt_llm(
 
     print(f'Calling LLM "{model}"...\n')
 
+    extra_kwargs = {}
+    if provider == "anthropic":
+        extra_kwargs["cache_system_prompt"] = cache_system_prompt
+
     response = _prompt_model(
         messages=messages,
         model=model,
@@ -99,6 +109,7 @@ def prompt_llm(
         max_tokens=max_tokens if max_tokens else min(model_info['output_limit'], 8192),
         temperature=temperature,
         json_mode=json_output,
+        **extra_kwargs,
     )
 
     log_token_usage(response, model)

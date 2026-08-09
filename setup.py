@@ -18,6 +18,7 @@ setup(
         'anthropic': ['anthropic>=0.34.2'],
         'google': ['google-generativeai>=0.8.3'],
         'azure': ['azure-ai-formrecognizer>=3.3.3', 'azure-core>=1.31.0'],
+        'dev': ['pytest>=8.0.0'],
     },
     author='Brandon T Wilde',
     author_email='brandon.t.wilde@gmail.com',

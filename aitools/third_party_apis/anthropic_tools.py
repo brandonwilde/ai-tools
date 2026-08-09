@@ -98,6 +98,7 @@ def prompt_claude(
     max_tokens=8192,
     temperature=None,
     json_mode=False,
+    cache_system_prompt: bool = False,
 ):
     """
     Get a response from a Claude LLM.
@@ -113,13 +114,20 @@ def prompt_claude(
     - temperature (float): The temperature to use for token sampling. Omitted from the
         request when None; newer models (Opus 4.8, Sonnet 5) reject the parameter.
     - json_mode (bool): Not used here but included for consistency with OpenAI prompt function.
+    - cache_system_prompt (bool): Whether to place a cache_control breakpoint on the final
+        block of the system prompt. Use this for a system prompt that is stable across calls
+        (e.g. the same instructions reused across many requests). Do NOT use this for content
+        that changes every call (e.g. a growing transcript) - a breakpoint there misses every
+        time and still pays the ~25% cache-write premium. For caching individual messages
+        (e.g. the growing-transcript case), mark the message dict with `"cache": True` instead -
+        that's handled by format_claude_messages independently of this flag.
 
     Returns:
     - str: The response from the LLM.
     """
     if isinstance(system_prompt, str):
         system_prompt = [system_prompt]
-    formatted_system_prompt = format_claude_messages(system_prompt, role="system")
+    formatted_system_prompt = format_claude_messages(system_prompt, role="system", cache_messages=cache_system_prompt)
     formatted_messages = format_claude_messages(messages)
 
     request_kwargs = {}
@@ -139,6 +147,10 @@ def prompt_claude(
         "text": "".join(b.text for b in message.content if b.type == "text"),
         "input_tokens": message.usage.input_tokens,
         "output_tokens": message.usage.output_tokens,
+        # Anthropic's usage.input_tokens already excludes cached tokens, so no
+        # adjustment is needed here (unlike DeepSeek/Gemini below).
+        "cache_write_tokens": getattr(message.usage, "cache_creation_input_tokens", 0) or 0,
+        "cache_read_tokens": getattr(message.usage, "cache_read_input_tokens", 0) or 0,
     }
 
 
