@@ -21,15 +21,38 @@ def log_token_usage(
     tok_cache_write = usage['cache_write_tokens'] if 'cache_write_tokens' in usage else 0
     tok_cache_read = usage['cache_read_tokens'] if 'cache_read_tokens' in usage else 0
 
-    cost = tok_in * ALL_LLMS[model]['input_cost_per_M'] / 1000000 \
+    input_cost_per_M = ALL_LLMS[model]['input_cost_per_M']
+
+    # Not every catalog entry has cache pricing on record (e.g. Gemini, Mistral -
+    # we don't have a verified source for their cache rates). Rather than crash
+    # or invent a number, fall back to the model's full input price for cached
+    # tokens - an intentional over-estimate, never an under-estimate or a crash.
+    cache_write_cost_per_M = ALL_LLMS[model].get('cache_write_cost_per_M')
+    cache_write_estimated = cache_write_cost_per_M is None
+    if cache_write_estimated:
+        cache_write_cost_per_M = input_cost_per_M
+
+    cache_read_cost_per_M = ALL_LLMS[model].get('cache_read_cost_per_M')
+    cache_read_estimated = cache_read_cost_per_M is None
+    if cache_read_estimated:
+        cache_read_cost_per_M = input_cost_per_M
+
+    cost = tok_in * input_cost_per_M / 1000000 \
         + tok_out * ALL_LLMS[model]['output_cost_per_M'] / 1000000 \
-        + tok_cache_write * (ALL_LLMS[model]['cache_write_cost_per_M'] / 1000000  if tok_cache_write else 0) \
-        + tok_cache_read * (ALL_LLMS[model]['cache_read_cost_per_M'] / 1000000 if tok_cache_read else 0)
-    
+        + tok_cache_write * (cache_write_cost_per_M / 1000000 if tok_cache_write else 0) \
+        + tok_cache_read * (cache_read_cost_per_M / 1000000 if tok_cache_read else 0)
+
+    cache_write_label = "Cache Write Tokens"
+    if tok_cache_write and cache_write_estimated:
+        cache_write_label += " (est. @ input rate)"
+    cache_read_label = "Cache Read Tokens"
+    if tok_cache_read and cache_read_estimated:
+        cache_read_label += " (est. @ input rate)"
+
     data = [
         ["Prompt Tokens", tok_in],
-        ["Cache Write Tokens", tok_cache_write],
-        ["Cache Read Tokens", tok_cache_read],
+        [cache_write_label, tok_cache_write],
+        [cache_read_label, tok_cache_read],
         ["Response Tokens", tok_out],
         ["Cost", f"${cost:.5f}"],
     ]
