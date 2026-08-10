@@ -13,13 +13,15 @@ DEFAULT_OPENAI_SPEECH_REC = "whisper-1"
 
 DEFAULT_OPENAI_LLM_INFO = ALL_LLMS[DEFAULT_OPENAI_LLM]
 
-if any([not OPENAI_API_KEY, not OPENAI_ORGANIZATION]):
-    raise Exception("OPENAI_API_KEY and OPENAI_ORGANIZATION must be set as environment variables.")
+_client = None
 
-CLIENT = OpenAI(
-    api_key=OPENAI_API_KEY,
-    organization=OPENAI_ORGANIZATION,
-)
+def _get_client() -> OpenAI:
+    global _client
+    if _client is None:
+        if not OPENAI_API_KEY:
+            raise ValueError("OPENAI_API_KEY must be set as an environment variable.")
+        _client = OpenAI(api_key=OPENAI_API_KEY, organization=OPENAI_ORGANIZATION or None)
+    return _client
 
 
 def format_openai_messages(
@@ -42,7 +44,7 @@ def format_openai_messages(
     content = []
 
     for message in messages:
-        if type(message) is str:
+        if isinstance(message, str):
             message = {"text": message}
         if 'text' in message:
             content.append({
@@ -87,7 +89,7 @@ def prompt_openai(
     model:OpenaiLLMs = DEFAULT_OPENAI_LLM,
     system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
     max_tokens=DEFAULT_OPENAI_LLM_INFO['output_limit'],
-    temperature=1,
+    temperature=None,
     json_mode=False,
 ):
     """
@@ -101,7 +103,8 @@ def prompt_openai(
     - model (str): The OpenAI model to use.
     - system_prompt (str): The system prompt to use.
     - max_tokens (int): The maximum number of tokens to generate.
-    - temperature (float): The temperature to use for token sampling.
+    - temperature (float): The temperature to use for token sampling. Omitted from the
+        request when None; GPT-5.x models reject the parameter.
     - json_mode (bool): Whether to return the response as a JSON object.
 
     Returns:
@@ -112,14 +115,17 @@ def prompt_openai(
     formatted_messages = format_openai_messages(messages)
     system_and_messages = formatted_system_prompt + formatted_messages
 
-    chat_response = CLIENT.chat.completions.create(
+    request_kwargs = {}
+    if temperature is not None and ALL_LLMS[model].get("supports_temperature", True):
+        request_kwargs["temperature"] = temperature
+    if json_mode:
+        request_kwargs["response_format"] = {"type": "json_object"}
+
+    chat_response = _get_client().chat.completions.create(
         model=model,
         messages=system_and_messages,
-        max_tokens=max_tokens,
-        temperature=temperature,
-        response_format={
-            "type": "json_object" if json_mode else "text",
-        }
+        max_completion_tokens=max_tokens,  # GPT-5.x models reject the old max_tokens param
+        **request_kwargs,
     )
 
     return {
@@ -135,7 +141,7 @@ def stream_openai(
     model:OpenaiLLMs = DEFAULT_OPENAI_LLM,
     formatted_system_prompt:List[dict] = [{'text': "You are a helpful assistant."}],
     max_tokens=DEFAULT_OPENAI_LLM_INFO['output_limit'],
-    temperature=1,
+    temperature=None,
     caching=False,
 ):
     """
@@ -145,13 +151,17 @@ def stream_openai(
     *Caching is done automatically, but param is included for consistency with Anthropic stream function.
     """
 
-    chat_response = CLIENT.chat.completions.create(
+    request_kwargs = {}
+    if temperature is not None and ALL_LLMS[model].get("supports_temperature", True):
+        request_kwargs["temperature"] = temperature
+
+    chat_response = _get_client().chat.completions.create(
         model=model,
         messages=formatted_system_prompt+formatted_messages,
         stream=True,
         stream_options={'include_usage': True},
         max_tokens=max_tokens,
-        temperature=temperature,
+        **request_kwargs,
     )
 
     collected_messages = []
@@ -194,9 +204,11 @@ def generate_image_via_openai(
     if reference_images:
         if not model_info.get('supports_reference_images'):
             raise ValueError(f"reference_images isn't supported for model '{model}'.")
-        files = [open(p, "rb") for p in reference_images]
+        files = []
         try:
-            return CLIENT.images.edit(
+            for p in reference_images:
+                files.append(open(p, "rb"))
+            return _get_client().images.edit(
                 model=model,
                 image=files,
                 prompt=prompt,
@@ -207,7 +219,7 @@ def generate_image_via_openai(
             for f in files:
                 f.close()
 
-    response = CLIENT.images.generate(
+    response = _get_client().images.generate(
         model=model,
         prompt=prompt,
         n=num_variations,
@@ -229,7 +241,7 @@ def transcribe_via_openai(
     - model (str): The OpenAI speech recognition model to use.
     """
 
-    transcription_response = CLIENT.audio.transcriptions.create(
+    transcription_response = _get_client().audio.transcriptions.create(
         model=model, 
         file=audio_file,
         response_format='verbose_json',
