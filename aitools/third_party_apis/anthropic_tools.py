@@ -147,7 +147,7 @@ def stream_claude(
     model:AnthropicLLMs = DEFAULT_ANTHROPIC_LLM,
     formatted_system_prompt:List[dict] = [{'text': "You are a helpful assistant."}],
     max_tokens=DEFAULT_ANTHROPIC_LLM_INFO['output_limit'],
-    temperature=1,
+    temperature=None,
     caching=False,
 ):
     """
@@ -160,12 +160,16 @@ def stream_claude(
     else:
         client_stream = _get_client().messages.stream
 
+    request_kwargs = {}
+    if temperature is not None and ALL_LLMS[model].get("supports_temperature", True):
+        request_kwargs["temperature"] = temperature
+
     with client_stream(
         model=model,
         system=formatted_system_prompt,
         messages=formatted_messages,
         max_tokens=max_tokens,
-        temperature=temperature,
+        **request_kwargs,
     ) as stream:
         for text_chunk in stream.text_stream:
             print(text_chunk, end="", flush=True)
