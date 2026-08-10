@@ -7,7 +7,7 @@ from aitools.media_tools.utils import encode_image
 from aitools.third_party_apis.models import ALL_LLMS, AnthropicLLMs
 
 ANTHROPIC_API_KEY=os.environ.get('ANTHROPIC_API_KEY')
-DEFAULT_ANTHROPIC_LLM = "claude-3-haiku-20240307"
+DEFAULT_ANTHROPIC_LLM = "claude-haiku-4-5"
 
 DEFAULT_ANTHROPIC_LLM_INFO = ALL_LLMS[DEFAULT_ANTHROPIC_LLM]
 
@@ -95,8 +95,8 @@ def prompt_claude(
     messages: List[Union[str,dict]],
     model:AnthropicLLMs = DEFAULT_ANTHROPIC_LLM,
     system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
-    max_tokens=DEFAULT_ANTHROPIC_LLM_INFO['output_limit'],
-    temperature=1,
+    max_tokens=8192,
+    temperature=None,
     json_mode=False,
 ):
     """
@@ -110,7 +110,8 @@ def prompt_claude(
     - model (str): The Claude model to use.
     - system_prompt (str): The system prompt to use.
     - max_tokens (int): The maximum number of tokens to generate.
-    - temperature (float): The temperature to use for token sampling.
+    - temperature (float): The temperature to use for token sampling. Omitted from the
+        request when None; newer models (Opus 4.8, Sonnet 5) reject the parameter.
     - json_mode (bool): Not used here but included for consistency with OpenAI prompt function.
 
     Returns:
@@ -121,16 +122,21 @@ def prompt_claude(
     formatted_system_prompt = format_claude_messages(system_prompt, role="system")
     formatted_messages = format_claude_messages(messages)
 
+    request_kwargs = {}
+    if temperature is not None and ALL_LLMS[model].get("supports_temperature", True):
+        request_kwargs["temperature"] = temperature
+
     message = _get_client().messages.create(
         model=model,
         system=formatted_system_prompt,
         messages=formatted_messages,
         max_tokens=max_tokens,
-        temperature=temperature,
+        **request_kwargs,
     )
 
     return {
-        "text": message.content[0].text,
+        # newer models may emit thinking blocks before the text block
+        "text": "".join(b.text for b in message.content if b.type == "text"),
         "input_tokens": message.usage.input_tokens,
         "output_tokens": message.usage.output_tokens,
     }
@@ -141,7 +147,7 @@ def stream_claude(
     model:AnthropicLLMs = DEFAULT_ANTHROPIC_LLM,
     formatted_system_prompt:List[dict] = [{'text': "You are a helpful assistant."}],
     max_tokens=DEFAULT_ANTHROPIC_LLM_INFO['output_limit'],
-    temperature=1,
+    temperature=None,
     caching=False,
 ):
     """
@@ -154,18 +160,22 @@ def stream_claude(
     else:
         client_stream = _get_client().messages.stream
 
+    request_kwargs = {}
+    if temperature is not None and ALL_LLMS[model].get("supports_temperature", True):
+        request_kwargs["temperature"] = temperature
+
     with client_stream(
         model=model,
         system=formatted_system_prompt,
         messages=formatted_messages,
         max_tokens=max_tokens,
-        temperature=temperature,
+        **request_kwargs,
     ) as stream:
         for text_chunk in stream.text_stream:
             print(text_chunk, end="", flush=True)
 
     response = {
-        'text': stream.current_message_snapshot.content[0].text,
+        'text': "".join(b.text for b in stream.current_message_snapshot.content if b.type == "text"),
         'input_tokens': stream.current_message_snapshot.usage.input_tokens,
         'output_tokens': stream.current_message_snapshot.usage.output_tokens,
     }

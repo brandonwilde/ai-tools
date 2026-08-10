@@ -7,7 +7,7 @@ from aitools.media_tools.utils import encode_image
 from aitools.third_party_apis.models import ALL_LLMS, GoogleLLMs
 
 GOOGLE_API_KEY=os.getenv('GOOGLE_API_KEY')
-DEFAULT_GOOGLE_LLM = "gemini-1.5-flash"
+DEFAULT_GOOGLE_LLM = "gemini-3.5-flash"
 
 DEFAULT_GOOGLE_LLM_INFO = ALL_LLMS[DEFAULT_GOOGLE_LLM]
 
@@ -80,10 +80,10 @@ def prompt_gemini(
     model:GoogleLLMs = DEFAULT_GOOGLE_LLM,
     system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
     max_tokens=DEFAULT_GOOGLE_LLM_INFO['output_limit'],
-    temperature=1,
+    temperature=None,
     json_mode=False,
 ):
-    
+
     formatted_messages = format_gemini_messages(messages)
     formatted_system_prompt = format_gemini_messages([system_prompt], role="system")
     
