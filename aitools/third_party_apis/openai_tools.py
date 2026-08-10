@@ -141,7 +141,7 @@ def stream_openai(
     model:OpenaiLLMs = DEFAULT_OPENAI_LLM,
     formatted_system_prompt:List[dict] = [{'text': "You are a helpful assistant."}],
     max_tokens=DEFAULT_OPENAI_LLM_INFO['output_limit'],
-    temperature=1,
+    temperature=None,
     caching=False,
 ):
     """
@@ -151,13 +151,17 @@ def stream_openai(
     *Caching is done automatically, but param is included for consistency with Anthropic stream function.
     """
 
+    request_kwargs = {}
+    if temperature is not None and ALL_LLMS[model].get("supports_temperature", True):
+        request_kwargs["temperature"] = temperature
+
     chat_response = _get_client().chat.completions.create(
         model=model,
         messages=formatted_system_prompt+formatted_messages,
         stream=True,
         stream_options={'include_usage': True},
         max_tokens=max_tokens,
-        temperature=temperature,
+        **request_kwargs,
     )
 
     collected_messages = []
