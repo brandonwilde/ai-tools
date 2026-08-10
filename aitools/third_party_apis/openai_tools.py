@@ -188,19 +188,42 @@ def generate_image_via_openai(
         style='',
         substyle='',
         num_variations=1,
+        reference_images=None,
         ):
     """
     Generate an image using the OpenAI API.
+
+    `reference_images`, if given, is a list of image file paths passed to the
+    model alongside the prompt. Only `gpt-image-1` supports this (routed
+    through the edits endpoint) — dall-e-2/3 will raise if given any.
     """
 
     model_info = OPENAI_IMAGE_GENERATORS[model]
     assert size in model_info['sizes'], f"Size '{size}' is not valid for model '{model}'."
 
+    if reference_images:
+        if not model_info.get('supports_reference_images'):
+            raise ValueError(f"reference_images isn't supported for model '{model}'.")
+        files = []
+        try:
+            for p in reference_images:
+                files.append(open(p, "rb"))
+            return _get_client().images.edit(
+                model=model,
+                image=files,
+                prompt=prompt,
+                n=num_variations,
+                size=size,
+            )
+        finally:
+            for f in files:
+                f.close()
+
     response = _get_client().images.generate(
         model=model,
         prompt=prompt,
         n=num_variations,
-        size=size
+        size=size,
     )
 
     return response

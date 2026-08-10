@@ -11,6 +11,7 @@ OpenaiLLMs = Literal[
 OpenaiImageGenerators = Literal[
     "dall-e-2",
     "dall-e-3",
+    "gpt-image-1",
 ]
 OpenaiSpeechRec = Literal[
     "whisper-1",
@@ -21,6 +22,8 @@ OpenaiImageSizes = Literal[
     "1024x1024",
     "1792x1024",
     "1024x1792",
+    "1536x1024",
+    "1024x1536",
 ]
 
 OPENAI_LLM_INFO = {
@@ -74,6 +77,13 @@ OPENAI_IMAGE_GENERATORS = {
     },
     "dall-e-3": {
         "sizes": ["1024x1024", "1792x1024", "1024x1792"],
+    },
+    "gpt-image-1": {
+        # OpenAI's current flagship image model (GPT-image family). Natively
+        # multimodal, so it accepts reference images via the edits endpoint,
+        # and always returns b64_json (no response_format/url option).
+        "sizes": ["1024x1024", "1536x1024", "1024x1536"],
+        "supports_reference_images": True,
     },
 }
 OPENAI_SPEECH_REC = {
@@ -190,6 +200,39 @@ MISTRAL_LLMS = {
     },
 }
 
+GoogleImageGenerators = Literal[
+    "gemini-3.1-flash-image",
+    "gemini-3.1-flash-lite-image",
+]
+# Gemini takes an aspect ratio plus a resolution tier rather than a pixel size.
+# The sizes below are the WxH strings this package uses everywhere else; the
+# Google provider converts them to the nearest supported aspect ratio.
+GoogleImageSizes = Literal[
+    "1024x1024",
+    "1024x1280",
+    "1280x1024",
+    "1024x1536",
+    "1536x1024",
+    "1024x1820",
+    "1820x1024",
+]
+GOOGLE_IMAGE_GENERATORS = {
+    # "Nano Banana 2" — strong text rendering, up to 4K.
+    "gemini-3.1-flash-image": {
+        "sizes": ["1024x1024", "1024x1280", "1280x1024", "1024x1536", "1536x1024", "1024x1820", "1820x1024"],
+        "resolutions": ["512px", "1K", "2K", "4K"],
+        "default_resolution": "2K",
+        "supports_reference_images": True,
+    },
+    # The Lite variant only supports 1K.
+    "gemini-3.1-flash-lite-image": {
+        "sizes": ["1024x1024", "1024x1280", "1280x1024", "1024x1536", "1536x1024", "1024x1820", "1820x1024"],
+        "resolutions": ["1K"],
+        "default_resolution": "1K",
+        "supports_reference_images": True,
+    },
+}
+
 RecraftImageGenerators = Literal[
     "recraft",
 ]
@@ -233,12 +276,14 @@ for model_name, model_data in OPENAI_IMAGE_GENERATORS.items():
     ALL_IMAGE_GENERATORS[model_name] = {**model_data, "provider": "openai"}
 for model_name, model_data in RECRAFT_IMAGE_GENERATORS.items():
     ALL_IMAGE_GENERATORS[model_name] = {**model_data, "provider": "recraft"}
+for model_name, model_data in GOOGLE_IMAGE_GENERATORS.items():
+    ALL_IMAGE_GENERATORS[model_name] = {**model_data, "provider": "google"}
 
 ALL_SPEECH_REC = {}
 for model_name, model_data in OPENAI_SPEECH_REC.items():
     ALL_SPEECH_REC[model_name] = {**model_data, "provider": "openai"}
 
 LLMsList = AnthropicLLMs | OpenaiLLMs | GoogleLLMs | DeepseekLLMs | MistralLLMs
-ImageGeneratorsList = OpenaiImageGenerators | RecraftImageGenerators
-ImageSizeList = OpenaiImageSizes | RecraftImageSizes
+ImageGeneratorsList = OpenaiImageGenerators | RecraftImageGenerators | GoogleImageGenerators
+ImageSizeList = OpenaiImageSizes | RecraftImageSizes | GoogleImageSizes
 SpeechRecList = OpenaiSpeechRec
