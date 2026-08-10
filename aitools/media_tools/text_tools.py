@@ -130,7 +130,7 @@ def chat_with_llm(
     system_prompt:Union[str,List[Union[str,dict]]]="You are a helpful assistant.",
     prefill_response="",
     max_tokens=0,
-    temperature=1,
+    temperature=None,
     cache=True,
 ):
     """
@@ -144,7 +144,8 @@ def chat_with_llm(
     model_info = ALL_LLMS[model]
 
     assert max_tokens <= model_info['output_limit'], f"max_tokens must be less than or equal to {model_info['output_limit']} for {model}, but you requested up to {max_tokens} tokens."
-    assert 0 <= temperature <= model_info['max_temp'], f"Permissible temperature values range from 0 to {model_info['max_temp']} for {model}, but you requested a temp of {temperature}."
+    if temperature is not None:
+        assert 0 <= temperature <= model_info['max_temp'], f"Permissible temperature values range from 0 to {model_info['max_temp']} for {model}, but you requested a temp of {temperature}."
     
     if model_info['provider'] == "openai":
         from aitools.third_party_apis.openai_tools import (
