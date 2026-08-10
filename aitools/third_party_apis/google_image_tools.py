@@ -9,7 +9,6 @@ package expects: `response.data` is a list of objects carrying `b64_json`.
 """
 
 import base64
-import math
 import mimetypes
 import os
 from dataclasses import dataclass, field
