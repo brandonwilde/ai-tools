@@ -70,8 +70,7 @@ def prompt_deepseek(
     cache_miss_tokens = getattr(usage, "prompt_cache_miss_tokens", None)
 
     if cache_hit_tokens is not None and cache_miss_tokens is not None:
-        # prompt_tokens includes cache_hit_tokens; use cache_miss_tokens as
-        # input_tokens so cached tokens aren't billed at full input price.
+        # Only bill cache misses at the full input rate.
         return {
             "text": chat_response.choices[0].message.content,
             "input_tokens": cache_miss_tokens,

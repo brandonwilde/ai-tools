@@ -106,8 +106,7 @@ def prompt_gemini(
 
     return {
         "text": response.text,
-        # prompt_token_count includes cached_content_token_count, so subtract
-        # it out to avoid billing cached tokens at full input price.
+        # prompt_token_count includes cached tokens; exclude them from input_tokens.
         "input_tokens": usage.prompt_token_count - cache_read_tokens,
         "cache_read_tokens": cache_read_tokens,
         "output_tokens": usage.candidates_token_count,

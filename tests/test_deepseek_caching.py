@@ -70,8 +70,7 @@ def test_deepseek_maps_cache_hit_and_miss_tokens(monkeypatch):
 
     result = deepseek_tools.prompt_deepseek(messages=[{"text": "hi"}])
 
-    # input_tokens should be cache_miss only, not the full prompt_tokens
-    # (which includes the cache hits) -- otherwise cached tokens get billed twice.
+    # input_tokens should be cache misses only.
     assert result["input_tokens"] == 300
     assert result["cache_read_tokens"] == 700
     assert result["output_tokens"] == 50

@@ -39,8 +39,7 @@ def _patch_model(monkeypatch, response):
 
 
 def test_gemini_subtracts_cached_tokens_from_input(monkeypatch):
-    # prompt_token_count includes cached_content_token_count (per Gemini docs),
-    # so input_tokens must be the difference to avoid double-billing cached tokens.
+    # prompt_token_count includes cached tokens.
     usage = FakeUsageMetadata(
         prompt_token_count=1000,
         candidates_token_count=50,

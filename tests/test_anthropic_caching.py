@@ -15,8 +15,7 @@ class FakeUsage:
                  cache_creation_input_tokens=None, cache_read_input_tokens=None):
         self.input_tokens = input_tokens
         self.output_tokens = output_tokens
-        # Only set these attrs when provided, to simulate older SDKs / responses
-        # that omit them entirely (getattr fallback path).
+        # Simulate responses that omit cache fields entirely.
         if cache_creation_input_tokens is not None:
             self.cache_creation_input_tokens = cache_creation_input_tokens
         if cache_read_input_tokens is not None:
@@ -118,7 +117,7 @@ def test_cache_tokens_surfaced_from_usage(monkeypatch):
 
 
 def test_cache_tokens_default_to_zero_when_absent(monkeypatch):
-    # Simulate an older SDK / response with no cache fields on usage at all.
+    # Response with no cache fields.
     usage = FakeUsage(input_tokens=100, output_tokens=20)
     _patch_client(monkeypatch, response=FakeMessage(usage=usage))
 

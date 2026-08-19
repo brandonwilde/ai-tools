@@ -23,10 +23,8 @@ def log_token_usage(
 
     input_cost_per_M = ALL_LLMS[model]['input_cost_per_M']
 
-    # Not every catalog entry has cache pricing on record (e.g. Gemini, Mistral -
-    # we don't have a verified source for their cache rates). Rather than crash
-    # or invent a number, fall back to the model's full input price for cached
-    # tokens - an intentional over-estimate, never an under-estimate or a crash.
+    # Fall back to the input price if no cache price is recorded. This is a
+    # conservative over-estimate and avoids crashes or invented rates.
     cache_write_cost_per_M = ALL_LLMS[model].get('cache_write_cost_per_M')
     cache_write_estimated = cache_write_cost_per_M is None
     if cache_write_estimated:
@@ -84,11 +82,8 @@ def prompt_llm(
     - max_tokens (int): The maximum number of tokens to generate. If not specified, the model's output limit (capped at 8192) will be used.
     - temperature (float): The temperature to use for token sampling. Omitted from the
         request when None; some newer models reject the parameter.
-    - cache_system_prompt (bool): Whether to place an explicit prompt-cache breakpoint on
-        the system prompt. Only forwarded to the Anthropic provider, which requires an
-        explicit cache_control breakpoint to cache. It's silently ignored for other providers,
-        since they cache automatically without an explicit breakpoint - no per-call warning
-        is printed, since this function can run once per turn in a loop.
+    - cache_system_prompt (bool): Forwarded to Anthropic to mark the system prompt for caching.
+        Silently ignored by other providers, which cache automatically.
 
     Returns:
     - str: The response from the LLM.
