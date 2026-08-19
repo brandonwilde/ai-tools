@@ -98,6 +98,7 @@ def prompt_claude(
     max_tokens=8192,
     temperature=None,
     json_mode=False,
+    cache_system_prompt: bool = False,
 ):
     """
     Get a response from a Claude LLM.
@@ -110,16 +111,17 @@ def prompt_claude(
     - model (str): The Claude model to use.
     - system_prompt (str): The system prompt to use.
     - max_tokens (int): The maximum number of tokens to generate.
-    - temperature (float): The temperature to use for token sampling. Omitted from the
-        request when None; newer models (Opus 4.8, Sonnet 5) reject the parameter.
-    - json_mode (bool): Not used here but included for consistency with OpenAI prompt function.
+    - temperature (float): Sampling temperature. Omitted when None for models that reject it.
+    - json_mode (bool): Unused; included for API consistency.
+    - cache_system_prompt (bool): Mark the final system-prompt block for caching. Best for
+        stable system prompts; avoid for content that changes every call.
 
     Returns:
     - str: The response from the LLM.
     """
     if isinstance(system_prompt, str):
         system_prompt = [system_prompt]
-    formatted_system_prompt = format_claude_messages(system_prompt, role="system")
+    formatted_system_prompt = format_claude_messages(system_prompt, role="system", cache_messages=cache_system_prompt)
     formatted_messages = format_claude_messages(messages)
 
     request_kwargs = {}
@@ -139,6 +141,9 @@ def prompt_claude(
         "text": "".join(b.text for b in message.content if b.type == "text"),
         "input_tokens": message.usage.input_tokens,
         "output_tokens": message.usage.output_tokens,
+        # Anthropic already excludes cached tokens from input_tokens.
+        "cache_write_tokens": getattr(message.usage, "cache_creation_input_tokens", 0) or 0,
+        "cache_read_tokens": getattr(message.usage, "cache_read_input_tokens", 0) or 0,
     }
 
 

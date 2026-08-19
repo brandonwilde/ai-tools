@@ -101,8 +101,13 @@ def prompt_gemini(
         )
     )
 
+    usage = response.usage_metadata
+    cache_read_tokens = getattr(usage, "cached_content_token_count", 0) or 0
+
     return {
         "text": response.text,
-        "input_tokens": response.usage_metadata.prompt_token_count,
-        "output_tokens": response.usage_metadata.candidates_token_count,
+        # prompt_token_count includes cached tokens; exclude them from input_tokens.
+        "input_tokens": usage.prompt_token_count - cache_read_tokens,
+        "cache_read_tokens": cache_read_tokens,
+        "output_tokens": usage.candidates_token_count,
     }

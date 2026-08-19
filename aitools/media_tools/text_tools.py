@@ -21,15 +21,36 @@ def log_token_usage(
     tok_cache_write = usage['cache_write_tokens'] if 'cache_write_tokens' in usage else 0
     tok_cache_read = usage['cache_read_tokens'] if 'cache_read_tokens' in usage else 0
 
-    cost = tok_in * ALL_LLMS[model]['input_cost_per_M'] / 1000000 \
+    input_cost_per_M = ALL_LLMS[model]['input_cost_per_M']
+
+    # Fall back to the input price if no cache price is recorded. This is a
+    # conservative over-estimate and avoids crashes or invented rates.
+    cache_write_cost_per_M = ALL_LLMS[model].get('cache_write_cost_per_M')
+    cache_write_estimated = cache_write_cost_per_M is None
+    if cache_write_estimated:
+        cache_write_cost_per_M = input_cost_per_M
+
+    cache_read_cost_per_M = ALL_LLMS[model].get('cache_read_cost_per_M')
+    cache_read_estimated = cache_read_cost_per_M is None
+    if cache_read_estimated:
+        cache_read_cost_per_M = input_cost_per_M
+
+    cost = tok_in * input_cost_per_M / 1000000 \
         + tok_out * ALL_LLMS[model]['output_cost_per_M'] / 1000000 \
-        + tok_cache_write * (ALL_LLMS[model]['cache_write_cost_per_M'] / 1000000  if tok_cache_write else 0) \
-        + tok_cache_read * (ALL_LLMS[model]['cache_read_cost_per_M'] / 1000000 if tok_cache_read else 0)
-    
+        + tok_cache_write * (cache_write_cost_per_M / 1000000 if tok_cache_write else 0) \
+        + tok_cache_read * (cache_read_cost_per_M / 1000000 if tok_cache_read else 0)
+
+    cache_write_label = "Cache Write Tokens"
+    if tok_cache_write and cache_write_estimated:
+        cache_write_label += " (est. @ input rate)"
+    cache_read_label = "Cache Read Tokens"
+    if tok_cache_read and cache_read_estimated:
+        cache_read_label += " (est. @ input rate)"
+
     data = [
         ["Prompt Tokens", tok_in],
-        ["Cache Write Tokens", tok_cache_write],
-        ["Cache Read Tokens", tok_cache_read],
+        [cache_write_label, tok_cache_write],
+        [cache_read_label, tok_cache_read],
         ["Response Tokens", tok_out],
         ["Cost", f"${cost:.5f}"],
     ]
@@ -46,6 +67,7 @@ def prompt_llm(
     max_tokens=0,
     temperature=None,
     json_output=False,
+    cache_system_prompt: bool = False,
 ) -> str:
     """
     Get a response from an LLM.
@@ -60,6 +82,8 @@ def prompt_llm(
     - max_tokens (int): The maximum number of tokens to generate. If not specified, the model's output limit (capped at 8192) will be used.
     - temperature (float): The temperature to use for token sampling. Omitted from the
         request when None; some newer models reject the parameter.
+    - cache_system_prompt (bool): Forwarded to Anthropic to mark the system prompt for caching.
+        Silently ignored by other providers, which cache automatically.
 
     Returns:
     - str: The response from the LLM.
@@ -91,6 +115,10 @@ def prompt_llm(
 
     print(f'Calling LLM "{model}"...\n')
 
+    extra_kwargs = {}
+    if provider == "anthropic":
+        extra_kwargs["cache_system_prompt"] = cache_system_prompt
+
     response = _prompt_model(
         messages=messages,
         model=model,
@@ -99,6 +127,7 @@ def prompt_llm(
         max_tokens=max_tokens if max_tokens else min(model_info['output_limit'], 8192),
         temperature=temperature,
         json_mode=json_output,
+        **extra_kwargs,
     )
 
     log_token_usage(response, model)
