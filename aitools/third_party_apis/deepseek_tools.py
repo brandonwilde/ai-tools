@@ -8,7 +8,7 @@ from aitools.third_party_apis.openai_tools import format_openai_messages
 
 DEEPSEEK_API_KEY=os.environ.get('DEEPSEEK_API_KEY')
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
-DEFAULT_DEEPSEEK_LLM = "deepseek-v4-flash"
+DEFAULT_DEEPSEEK_LLM = "deepseek-flash"
 
 DEFAULT_DEEPSEEK_LLM_INFO = ALL_LLMS[DEFAULT_DEEPSEEK_LLM]
 
