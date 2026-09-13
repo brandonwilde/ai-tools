@@ -3,7 +3,7 @@ from typing import List, Literal, Union
 
 import google.generativeai as genai
 
-from aitools.media_tools.utils import encode_image
+from aitools.media_tools.utils import encode_image, image_media_type
 from aitools.third_party_apis.models import ALL_LLMS, GoogleLLMs
 
 GOOGLE_API_KEY=os.getenv('GOOGLE_API_KEY')
@@ -44,15 +44,10 @@ def format_gemini_messages(
                 "text": f"```\n{message['code']}\n```"
             })
         elif 'image' in message:
-            _, dot_ext = os.path.splitext(message['image'])
-            ext = dot_ext.strip('.').lower()
-            assert ext in ["png", "jpg", "jpeg", "gif", "webp"], f"Image must be a PNG, JPEG, GIF, or WEBP file, but you provided a {ext} file."
-            if ext == "jpg":
-                ext = "jpeg"
             base64_image = encode_image(message['image'])
             content.append({
                 "inlineData": {
-                    "mimeType": f"image/{ext}",
+                    "mimeType": image_media_type(message['image']),
                     "data": base64_image,
                 }
             })

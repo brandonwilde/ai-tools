@@ -3,7 +3,7 @@ from typing import List, Literal, Union
 
 import anthropic
 
-from aitools.media_tools.utils import encode_image
+from aitools.media_tools.utils import encode_image, image_media_type
 from aitools.third_party_apis.models import ALL_LLMS, AnthropicLLMs
 
 ANTHROPIC_API_KEY=os.environ.get('ANTHROPIC_API_KEY')
@@ -55,17 +55,12 @@ def format_claude_messages(
                 "text": f"```\n{message['code']}\n```"
             })
         elif 'image' in message:
-            _, dot_ext = os.path.splitext(message['image'])
-            ext = dot_ext.strip('.').lower()
-            assert ext in ["png", "jpg", "jpeg", "gif", "webp"], f"Image must be a PNG, JPEG, GIF, or WEBP file, but you provided a {ext} file."
-            if ext == "jpg":
-                ext = "jpeg"
             base64_image = encode_image(message['image'])
             content.append({
                 "type": "image",
                 "source": {
                     "type": "base64",
-                    "media_type": f"image/{ext}",
+                    "media_type": image_media_type(message['image']),
                     "data": base64_image,
                 }
             })
