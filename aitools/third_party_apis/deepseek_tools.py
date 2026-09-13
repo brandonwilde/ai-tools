@@ -1,26 +1,14 @@
-import os
 from typing import List, Union
 
-from openai import OpenAI
-
 from aitools.third_party_apis.models import ALL_LLMS, DeepseekLLMs
-from aitools.third_party_apis.openai_tools import format_openai_messages
+from aitools.third_party_apis.openai_compatible import make_client_getter, prompt_openai_compatible
 
-DEEPSEEK_API_KEY=os.environ.get('DEEPSEEK_API_KEY')
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 DEFAULT_DEEPSEEK_LLM = "deepseek-flash"
 
 DEFAULT_DEEPSEEK_LLM_INFO = ALL_LLMS[DEFAULT_DEEPSEEK_LLM]
 
-_client = None
-
-def _get_client() -> OpenAI:
-    global _client
-    if _client is None:
-        if not DEEPSEEK_API_KEY:
-            raise ValueError("DEEPSEEK_API_KEY must be set as an environment variable.")
-        _client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_BASE_URL)
-    return _client
+_get_client = make_client_getter("DEEPSEEK_API_KEY", DEEPSEEK_BASE_URL)
 
 
 def prompt_deepseek(
@@ -48,38 +36,12 @@ def prompt_deepseek(
     - dict: The response text and token usage.
     """
 
-    formatted_system_prompt = format_openai_messages(system_prompt, role="system")
-    formatted_messages = format_openai_messages(messages)
-    system_and_messages = formatted_system_prompt + formatted_messages
-
-    request_kwargs = {}
-    if temperature is not None:
-        request_kwargs["temperature"] = temperature
-    if json_mode:
-        request_kwargs["response_format"] = {"type": "json_object"}
-
-    chat_response = _get_client().chat.completions.create(
+    return prompt_openai_compatible(
+        get_client=_get_client,
+        messages=messages,
         model=model,
-        messages=system_and_messages,
+        system_prompt=system_prompt,
         max_tokens=max_tokens,
-        **request_kwargs,
+        temperature=temperature,
+        json_mode=json_mode,
     )
-
-    usage = chat_response.usage
-    cache_hit_tokens = getattr(usage, "prompt_cache_hit_tokens", None)
-    cache_miss_tokens = getattr(usage, "prompt_cache_miss_tokens", None)
-
-    if cache_hit_tokens is not None and cache_miss_tokens is not None:
-        # Only bill cache misses at the full input rate.
-        return {
-            "text": chat_response.choices[0].message.content,
-            "input_tokens": cache_miss_tokens,
-            "cache_read_tokens": cache_hit_tokens,
-            "output_tokens": chat_response.usage.completion_tokens,
-        }
-
-    return {
-        "text": chat_response.choices[0].message.content,
-        "input_tokens": chat_response.usage.prompt_tokens,
-        "output_tokens": chat_response.usage.completion_tokens,
-    }

@@ -273,6 +273,55 @@ MISTRAL_LLMS = {
     },
 }
 
+MoonshotLLMs = Literal[
+    "kimi-k3",
+    "kimi-k2.7-code",
+    "kimi-k2.7-code-highspeed",
+    "kimi-k2.6",
+]
+MOONSHOT_LLM_INFO = {
+    "max_temp": 1,
+}
+MOONSHOT_LLMS = {
+    # Every Kimi model fixes temperature and top_p; passing either is an error.
+    # Moonshot documents max_completion_tokens for kimi-k3 only (default 131072,
+    # raisable to the full 1M context); the k2.x output caps are unpublished, so
+    # they reuse the same conservative default.
+    "kimi-k3": {
+        "input_limit": 1048576,
+        "output_limit": 131072,
+        "input_cost_per_M": 3.00,
+        "cache_read_cost_per_M": 0.30,
+        "output_cost_per_M": 15.00,
+        "supports_temperature": False,
+    },
+    "kimi-k2.7-code": {
+        "input_limit": 262144,
+        "output_limit": 131072,
+        "input_cost_per_M": 0.95,
+        "cache_read_cost_per_M": 0.19,
+        "output_cost_per_M": 4.00,
+        "supports_temperature": False,
+    },
+    # Same model as kimi-k2.7-code, tuned for latency and priced accordingly.
+    "kimi-k2.7-code-highspeed": {
+        "input_limit": 262144,
+        "output_limit": 131072,
+        "input_cost_per_M": 1.90,
+        "cache_read_cost_per_M": 0.38,
+        "output_cost_per_M": 8.00,
+        "supports_temperature": False,
+    },
+    "kimi-k2.6": {
+        "input_limit": 262144,
+        "output_limit": 131072,
+        "input_cost_per_M": 0.95,
+        "cache_read_cost_per_M": 0.16,
+        "output_cost_per_M": 4.00,
+        "supports_temperature": False,
+    },
+}
+
 GoogleImageGenerators = Literal[
     "gemini-3.1-flash-image",
     "gemini-3.1-flash-lite-image",
@@ -343,6 +392,8 @@ for model_name, model_data in DEEPSEEK_LLMS.items():
     ALL_LLMS[model_name] = {**model_data, "provider": "deepseek", **DEEPSEEK_LLM_INFO}
 for model_name, model_data in MISTRAL_LLMS.items():
     ALL_LLMS[model_name] = {**model_data, "provider": "mistral", **MISTRAL_LLM_INFO}
+for model_name, model_data in MOONSHOT_LLMS.items():
+    ALL_LLMS[model_name] = {**model_data, "provider": "moonshot", **MOONSHOT_LLM_INFO}
 
 ALL_IMAGE_GENERATORS = {}
 for model_name, model_data in OPENAI_IMAGE_GENERATORS.items():
@@ -356,7 +407,7 @@ ALL_SPEECH_REC = {}
 for model_name, model_data in OPENAI_SPEECH_REC.items():
     ALL_SPEECH_REC[model_name] = {**model_data, "provider": "openai"}
 
-LLMsList = AnthropicLLMs | OpenaiLLMs | GoogleLLMs | DeepseekLLMs | MistralLLMs
+LLMsList = AnthropicLLMs | OpenaiLLMs | GoogleLLMs | DeepseekLLMs | MistralLLMs | MoonshotLLMs
 ImageGeneratorsList = OpenaiImageGenerators | RecraftImageGenerators | GoogleImageGenerators
 ImageSizeList = OpenaiImageSizes | RecraftImageSizes | GoogleImageSizes
 SpeechRecList = OpenaiSpeechRec

@@ -107,6 +107,8 @@ def prompt_llm(
         from aitools.third_party_apis.deepseek_tools import prompt_deepseek as _prompt_model
     elif provider == "mistral":
         from aitools.third_party_apis.mistral_tools import prompt_mistral as _prompt_model
+    elif provider == "moonshot":
+        from aitools.third_party_apis.moonshot_tools import prompt_kimi as _prompt_model
     else:
         raise ValueError(f"Provider '{provider}' is not yet supported. Add basic prompting function for this provider.")
 
@@ -145,6 +147,7 @@ def available_models() -> dict:
         "google": "GOOGLE_API_KEY",
         "deepseek": "DEEPSEEK_API_KEY",
         "mistral": "MISTRAL_API_KEY",
+        "moonshot": "MOONSHOT_API_KEY",
     }
     return {
         name: info
