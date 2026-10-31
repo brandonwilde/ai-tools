@@ -1,19 +1,21 @@
-# Commits and PRs
+# Branches, PRs, and releases
 
-Every commit uses [Conventional Commits](https://www.conventionalcommits.org):
-`<type>(<optional scope>): <summary>`, with `!` after the type/scope for
-breaking changes. CI rejects PRs containing commits that don't match, and
-release-please derives version bumps and the changelog from them.
+Release Drafter keeps a draft GitHub Release listing each merged PR by title, so
+**PR titles are release-note lines**: write them for someone importing the
+package.
 
-- `feat` — new capability for library users (minor bump)
-- `fix` — bug fix (patch bump)
-- `feat!` / `fix!` — breaking change to the public API (minor bump while on 0.x)
-- `docs`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `style`, `revert`
-  — everything else
+PR labels set the section and the version bump. They are applied automatically
+from the branch prefix:
 
-Commit subjects become changelog lines, so write them for someone importing
-the package.
+| Branch prefix | Label | Bump |
+| --- | --- | --- |
+| `feat/` | `enhancement` | minor |
+| `fix/` | `bug` | patch |
+| `docs/` | `documentation` | patch |
+| `chore/`, `ci/`, `build/`, `refactor/`, `test/` | `chore` | patch |
 
-Feature branches PR into `main`. Don't edit the version in `setup.py`,
-`CHANGELOG.md`, or `.release-please-manifest.json` by hand; merging the
-release-please Release PR does that.
+Add `breaking` by hand for incompatible API changes (major bump), and
+`skip-changelog` for PRs that shouldn't appear in the notes.
+
+The package version comes from the latest git tag via setuptools-scm. Don't add
+a version string to `setup.py`; publishing the draft release creates the tag.

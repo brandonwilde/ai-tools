@@ -1,0 +1,42 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+change-template: '- $TITLE (#$NUMBER)'
+change-title-escapes: '\<*_&'
+categories:
+  - type: 'pre-exclude'
+    when:
+      label: 'skip-changelog'
+  - title: 'Breaking Changes'
+    semver-increment: 'major'
+    exclusive: true
+    when:
+      label: 'breaking'
+  - title: 'Features'
+    semver-increment: 'minor'
+    when:
+      label: 'enhancement'
+  - title: 'Bug Fixes'
+    when:
+      label: 'bug'
+  - title: 'Maintenance'
+    when:
+      labels:
+        - 'chore'
+        - 'documentation'
+  - type: 'version-resolver'
+    semver-increment: 'patch'
+autolabeler:
+  - labels: ['enhancement']
+    branch:
+      - '/^feat(ure)?\/.+/'
+  - labels: ['bug']
+    branch:
+      - '/^fix\/.+/'
+  - labels: ['documentation']
+    branch:
+      - '/^docs?\/.+/'
+  - labels: ['chore']
+    branch:
+      - '/^(chore|ci|build|refactor|test)\/.+/'
+template: |
+  $CHANGES
