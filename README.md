@@ -29,13 +29,17 @@ The tools are generally intended to be called by other scripts. Example use case
 
 ## Usage in a separate project
 
-To use the tools in a separate project, you can install this package from source with
+To use the tools in a separate project, install a tagged release from source with
+<!-- x-release-please-start-version -->
 ```bash
-pip install git+https://github.com/brandonwilde/ai-tools.git@main[<extras>]
+pip install "aitools[<extras>] @ git+https://github.com/brandonwilde/ai-tools.git@v0.2.0"
 ```
-Replace `<extras>` with a list of any extra dependencies you want to install. Options are `openai`, `anthropic`, `google`, `azure`, and `all`. Omitting `@main[<extras>]` to install only the base dependencies.
+<!-- x-release-please-end -->
+Replace `<extras>` with a comma-separated list of extra dependencies. Options are `openai`, `anthropic`, `google`, `azure`, and `all`. Drop `[<extras>]` to install only the base dependencies.
+
+Available versions are listed under [Releases](https://github.com/brandonwilde/ai-tools/releases). Replace the tag with `main` to get unreleased changes.
 
 Then import the tools in your script with
 ```python
-from ai_tools import <tool_name>
+from aitools.media_tools.text_tools import prompt_llm
 ```
