@@ -5,7 +5,10 @@
     ".": {
       "release-type": "python",
       "package-name": "aitools",
-      "bump-minor-pre-major": true
+      "bump-minor-pre-major": true,
+      "extra-files": [
+        "README.md"
+      ]
     }
   }
 }
