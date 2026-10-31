@@ -215,6 +215,7 @@ GOOGLE_LLMS = {
 DeepseekLLMs = Literal[
     "deepseek-v4-pro",
     "deepseek-flash",
+    "deepseek-v4-flash",
 ]
 DEEPSEEK_LLM_INFO = {
     "max_temp": 2,
@@ -230,7 +231,7 @@ DEEPSEEK_LLMS = {
         "cache_read_cost_per_M": 0.044,
         "output_cost_per_M": 3.96,
     },
-    # Serves DeepSeek-V4.1-Flash; the legacy name deepseek-v4-flash still routes here.
+    # Serves DeepSeek-V4.1-Flash.
     "deepseek-flash": {
         "input_limit": 1000000,
         "output_limit": 384000,
@@ -239,6 +240,8 @@ DEEPSEEK_LLMS = {
         "output_cost_per_M": 1.20,
     },
 }
+# Legacy name; DeepSeek still routes it to deepseek-flash.
+DEEPSEEK_LLMS["deepseek-v4-flash"] = DEEPSEEK_LLMS["deepseek-flash"]
 
 MistralLLMs = Literal[
     "mistral-large-latest",
