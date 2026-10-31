@@ -2,6 +2,9 @@ from typing import Literal
 
 # Keep this list updated for accurate type-checking
 OpenaiLLMs = Literal[
+    "gpt-5.6-sol",
+    "gpt-5.6-terra",
+    "gpt-5.6-luna",
     "gpt-5.5",
     "gpt-5.4",
     "gpt-5.4-mini",
@@ -32,6 +35,33 @@ OPENAI_LLM_INFO = {
 OPENAI_LLMS = {
     # GPT-5.x models reject the temperature parameter and require
     # max_completion_tokens instead of max_tokens.
+    "gpt-5.6-sol": {
+        "input_limit": 922000,
+        "output_limit": 128000,
+        "input_cost_per_M": 4.00,  # promotional through 2026-11-21
+        "cache_write_cost_per_M": 5.00,
+        "cache_read_cost_per_M": 0.40,
+        "output_cost_per_M": 20.00,  # promotional through 2026-11-21
+        "supports_temperature": False,
+    },
+    "gpt-5.6-terra": {
+        "input_limit": 922000,
+        "output_limit": 128000,
+        "input_cost_per_M": 2.00,
+        "cache_write_cost_per_M": 2.50,
+        "cache_read_cost_per_M": 0.20,
+        "output_cost_per_M": 12.00,
+        "supports_temperature": False,
+    },
+    "gpt-5.6-luna": {
+        "input_limit": 922000,
+        "output_limit": 128000,
+        "input_cost_per_M": 0.20,
+        "cache_write_cost_per_M": 0.25,
+        "cache_read_cost_per_M": 0.02,
+        "output_cost_per_M": 1.20,
+        "supports_temperature": False,
+    },
     "gpt-5.5": {
         "input_limit": 400000,
         "output_limit": 128000,
@@ -94,6 +124,8 @@ OPENAI_SPEECH_REC = {
 
 
 AnthropicLLMs = Literal[
+    "claude-fable-5",
+    "claude-opus-5",
     "claude-opus-4-8",
     "claude-sonnet-5",
     "claude-haiku-4-5",
@@ -102,7 +134,25 @@ ANTHROPIC_LLM_INFO = {
     "max_temp": 1,
 }
 ANTHROPIC_LLMS = {
-    # Opus 4.8 and Sonnet 5 reject non-default temperature/top_p/top_k.
+    # Fable 5, Opus 5, Opus 4.8 and Sonnet 5 reject non-default temperature/top_p/top_k.
+    "claude-fable-5": {
+        "input_limit": 1000000,
+        "output_limit": 128000,
+        "input_cost_per_M": 10.00,
+        "cache_write_cost_per_M": 12.50,
+        "cache_read_cost_per_M": 1.00,
+        "output_cost_per_M": 50.00,
+        "supports_temperature": False,
+    },
+    "claude-opus-5": {
+        "input_limit": 1000000,
+        "output_limit": 128000,
+        "input_cost_per_M": 5.00,
+        "cache_write_cost_per_M": 6.25,
+        "cache_read_cost_per_M": 0.50,
+        "output_cost_per_M": 25.00,
+        "supports_temperature": False,
+    },
     "claude-opus-4-8": {
         "input_limit": 1000000,
         "output_limit": 128000,  # requires streaming above ~16k
@@ -132,6 +182,7 @@ ANTHROPIC_LLMS = {
 }
 
 GoogleLLMs = Literal[
+    "gemini-3.8-flash",
     "gemini-3.1-pro-preview",
     "gemini-3.5-flash",
 ]
@@ -139,10 +190,18 @@ GOOGLE_LLM_INFO = {
     "max_temp": 2,
 }
 GOOGLE_LLMS = {
+    "gemini-3.8-flash": {
+        "input_limit": 1048576,
+        "output_limit": 65536,
+        "input_cost_per_M": 0.75,  # introductory through 2026-12-31, then 1.50
+        "cache_read_cost_per_M": 0.075,  # then 0.15
+        "output_cost_per_M": 3.75,  # introductory through 2026-12-31, then 7.50
+    },
     "gemini-3.1-pro-preview": {
         "input_limit": 1048576,
         "output_limit": 65536,
         "input_cost_per_M": 2.00,  # up to 200k tokens, 4.00 after that
+        "cache_read_cost_per_M": 0.20,  # 0.40 above 200k
         "output_cost_per_M": 12.00,  # up to 200k tokens, 18.00 after that
     },
     "gemini-3.5-flash": {
@@ -155,48 +214,65 @@ GOOGLE_LLMS = {
 
 DeepseekLLMs = Literal[
     "deepseek-v4-pro",
+    "deepseek-flash",
     "deepseek-v4-flash",
 ]
 DEEPSEEK_LLM_INFO = {
     "max_temp": 2,
 }
 DEEPSEEK_LLMS = {
-    # deepseek-chat / deepseek-reasoner names are deprecated as of 2026-07-24
+    # deepseek-chat / deepseek-reasoner names are deprecated as of 2026-07-24.
+    # Costs are peak rates; off-peak (all hours but 01:00-04:00 and 06:00-10:00
+    # UTC, Mon-Fri) bills at exactly half, so these are an upper bound.
     "deepseek-v4-pro": {
         "input_limit": 1000000,
         "output_limit": 384000,
-        "input_cost_per_M": 0.435,
-        "cache_read_cost_per_M": 0.003625,
-        "output_cost_per_M": 0.87,
+        "input_cost_per_M": 1.32,
+        "cache_read_cost_per_M": 0.044,
+        "output_cost_per_M": 3.96,
     },
-    "deepseek-v4-flash": {
+    # Serves DeepSeek-V4.1-Flash.
+    "deepseek-flash": {
         "input_limit": 1000000,
         "output_limit": 384000,
-        "input_cost_per_M": 0.14,
-        "cache_read_cost_per_M": 0.0028,
-        "output_cost_per_M": 0.28,
+        "input_cost_per_M": 0.30,
+        "cache_read_cost_per_M": 0.006,
+        "output_cost_per_M": 1.20,
     },
 }
+# Legacy name; DeepSeek still routes it to deepseek-flash.
+DEEPSEEK_LLMS["deepseek-v4-flash"] = DEEPSEEK_LLMS["deepseek-flash"]
 
 MistralLLMs = Literal[
     "mistral-large-latest",
     "mistral-medium-latest",
+    "mistral-small-latest",
 ]
 MISTRAL_LLM_INFO = {
     "max_temp": 1,
 }
 MISTRAL_LLMS = {
+    # Cached input tokens bill at 10% of the model's input rate.
     "mistral-large-latest": {  # currently Mistral Large 3
         "input_limit": 256000,
         "output_limit": 32000,
         "input_cost_per_M": 0.50,
+        "cache_read_cost_per_M": 0.05,
         "output_cost_per_M": 1.50,
     },
-    "mistral-medium-latest": {  # currently Mistral Medium 3
-        "input_limit": 128000,
+    "mistral-medium-latest": {  # currently Mistral Medium 3.5
+        "input_limit": 256000,
         "output_limit": 32000,
-        "input_cost_per_M": 0.40,
-        "output_cost_per_M": 2.00,
+        "input_cost_per_M": 1.50,
+        "cache_read_cost_per_M": 0.15,
+        "output_cost_per_M": 7.50,
+    },
+    "mistral-small-latest": {  # currently Mistral Small 4
+        "input_limit": 256000,
+        "output_limit": 32000,
+        "input_cost_per_M": 0.15,
+        "cache_read_cost_per_M": 0.015,
+        "output_cost_per_M": 0.60,
     },
 }
 
