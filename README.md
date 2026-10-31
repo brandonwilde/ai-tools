@@ -9,7 +9,7 @@ New tools and providers are added as need arises. Currently included are the fol
 - LLM prompting - OpenAI, Anthropic, Google, DeepSeek, Mistral, Moonshot
 - LLM chat - OpenAI, Anthropic
 - Translation - OpenAI, Anthropic
-- Image analysis - OpenAI, Anthropic
+- Image analysis - OpenAI, Anthropic, Google, DeepSeek, Mistral, Moonshot
 - Image generation - OpenAI, Recraft, Google
 - Audio transcription - OpenAI
 - OCR - Azure

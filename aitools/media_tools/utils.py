@@ -42,6 +42,21 @@ def filenamify(s: str) -> str:
     return s.translate(character_map).lower()
 
 
+SUPPORTED_IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "webp"]
+
+
+def image_media_type(image_path):
+    '''
+    Return the IANA media type for an image path (e.g. "image/png").
+    '''
+    _, dot_ext = os.path.splitext(image_path)
+    ext = dot_ext.strip('.').lower()
+    assert ext in SUPPORTED_IMAGE_EXTENSIONS, f"Image must be a PNG, JPEG, GIF, or WEBP file, but you provided a {ext} file."
+    if ext == "jpg":
+        ext = "jpeg"
+    return f"image/{ext}"
+
+
 def encode_image(image_path):
     '''
     Encode an image as base64.

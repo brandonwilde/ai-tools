@@ -3,7 +3,7 @@ from typing import BinaryIO, List, Literal, Union
 
 from openai import OpenAI
 
-from aitools.media_tools.utils import encode_image
+from aitools.media_tools.utils import encode_image, image_media_type
 from aitools.third_party_apis.models import ALL_LLMS, OpenaiImageGenerators, OpenaiImageSizes, OpenaiLLMs, OpenaiSpeechRec, OPENAI_IMAGE_GENERATORS
 
 OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
@@ -61,7 +61,7 @@ def format_openai_messages(
             content.append({
                 "type": "image_url",
                 "image_url": {
-                    "url": f"data:image/jpeg;base64,{base64_image}"
+                    "url": f"data:{image_media_type(message['image'])};base64,{base64_image}"
                 }
             })
     

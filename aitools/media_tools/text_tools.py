@@ -95,6 +95,10 @@ def prompt_llm(
     if temperature is not None:
         assert 0 <= temperature <= model_info['max_temp'], f"Permissible temperature values range from 0 to {model_info['max_temp']} for {model}, but you requested a temp of {temperature}."
 
+    if not model_info.get('supports_images', True):
+        has_image = any(isinstance(m, dict) and 'image' in m for m in messages)
+        assert not has_image, f"{model} does not accept image input. Use a vision-capable model instead."
+
     provider = ALL_LLMS[model]['provider']
 
     if provider == "openai":

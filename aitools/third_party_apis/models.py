@@ -227,6 +227,7 @@ DEEPSEEK_LLMS = {
     "deepseek-v4-pro": {
         "input_limit": 1000000,
         "output_limit": 384000,
+        "supports_images": False,
         "input_cost_per_M": 1.32,
         "cache_read_cost_per_M": 0.044,
         "output_cost_per_M": 3.96,
