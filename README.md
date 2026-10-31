@@ -6,11 +6,11 @@ A collection of general-purpose tools for processing text, documents, and images
 
 New tools and providers are added as need arises. Currently included are the following tools and providers:
 
-- LLM prompting - OpenAI, Anthropic, Google
+- LLM prompting - OpenAI, Anthropic, Google, DeepSeek, Mistral, Moonshot
 - LLM chat - OpenAI, Anthropic
 - Translation - OpenAI, Anthropic
 - Image analysis - OpenAI, Anthropic
-- Image generation - OpenAI, Recraft
+- Image generation - OpenAI, Recraft, Google
 - Audio transcription - OpenAI
 - OCR - Azure
 
