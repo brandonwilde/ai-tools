@@ -30,14 +30,12 @@ The tools are generally intended to be called by other scripts. Example use case
 ## Usage in a separate project
 
 To use the tools in a separate project, install a tagged release from source with
-<!-- x-release-please-start-version -->
 ```bash
-pip install "aitools[<extras>] @ git+https://github.com/brandonwilde/ai-tools.git@v0.2.0"
+pip install "aitools[<extras>] @ git+https://github.com/brandonwilde/ai-tools.git@vX.Y.Z"
 ```
-<!-- x-release-please-end -->
 Replace `<extras>` with a comma-separated list of extra dependencies. Options are `openai`, `anthropic`, `google`, `azure`, and `all`. Drop `[<extras>]` to install only the base dependencies.
 
-Available versions are listed under [Releases](https://github.com/brandonwilde/ai-tools/releases). Replace the tag with `main` to get unreleased changes.
+Replace `vX.Y.Z` with a version from [Releases](https://github.com/brandonwilde/ai-tools/releases), or with `main` to get unreleased changes.
 
 Then import the tools in your script with
 ```python
